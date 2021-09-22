@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>高度充满父容器</title>
+	</head>
+	<style>
+        .body{
+            padding: 0px;
+            margin: 0px;
+        }
+		.rootView {
+			height: 100%;
+			width: 100%;
+            position: absolute;
+		}
+        .sideCol{
+            height: 100%;
+            width: 25%;
+            float: left;
+        }
+        .mainCol{
+            height: 100%;
+            width: 75%;
+            float: right;
+            background-color: aqua;
+        }
+		.preview {
+			height: 30%;
+			width: 100%;/*必须,沾满宽度防止浮动 */
+			float: left;/*必须 */
+			background-color: red;
+		}
+		.content {
+			height:100%;/*必须*/
+			background-color: green;
+		}
+        .mainWindow{
+            height: 100%;
+            width: 100%;
+           
+        }
+	</style>
+	<body class="body">
+		<div class="rootView">
+            <div class="sideCol">
+			    <div class="preview">
+			    	预览
+			    </div>
+			    <div class="content">
+			    	库 
+			    </div>
+            </div>
+            <div class="mainCol">
+                内容
+            </div>
+		</div>
+	</body>
+</html>
