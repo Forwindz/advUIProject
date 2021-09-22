@@ -21,8 +21,10 @@ console.log('执行了3030')*/
 let express = require("express");
 let app = express();
  
-app.use(express.static("static"));//关键是这一句，我的目录是html的目录
- 
+app.use(express.static("static"));
+app.use('/css', express.static(__dirname + '/css'));
+app.use('/img', express.static(__dirname + '/img'));
+app.use('/js', express.static(__dirname + '/js'));
 app.listen(8080, ()=>{
     console.log("服务启动成功。");
 })

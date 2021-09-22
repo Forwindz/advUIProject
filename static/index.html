@@ -42,17 +42,19 @@
         }
 	</style>
 	<body class="body">
+		<script src="dist/main.js" type="module"></script>
 		<div class="rootView">
             <div class="sideCol">
-			    <div class="preview">
+			    <div class="preview" id="windowPreview">
 			    	预览
 			    </div>
-			    <div class="content">
+			    <div class="content" id="windowAssets">
 			    	库 
 			    </div>
             </div>
-            <div class="mainCol">
+            <div class="mainCol" id="windowProgramming">
                 内容
+				<div class="test" id="test"> 123</div>
             </div>
 		</div>
 	</body>
