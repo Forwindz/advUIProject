@@ -134,10 +134,7 @@ class Port{
 
 class InputPort extends Port{
     defaultValue=null;
-    constructor(_name,_type){
-        super(_name,_type);
-    }
-    constructor(_name,_type,_defaultValue){
+    constructor(_name,_type,_defaultValue=null){
         super(_name,_type);
         defaultValue=_defaultValue
     }

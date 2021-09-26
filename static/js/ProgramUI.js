@@ -1,5 +1,5 @@
 import Two from "./lib/two.js"
-
+import * as Define from "./data/ProgramDefine.js"
 export function mainProgramming() {
     var elem = document.getElementById('test');
     var params = { width: 285, height: 200 };
@@ -20,4 +20,6 @@ export function mainProgramming() {
     // Don't forget to tell two to render everything
     // to the screen
     two.update();
+    let a = new Define.NodeGraph();
+    console.log(a);
 }
