@@ -1,5 +1,6 @@
 import * as utils from "../util/utils.js"
 import CountSet from "../util/CountSet.js"
+import EventPublisher from "../util/Events.js"
 /**
  * This file define some data structure for the Node system
  * 
@@ -107,6 +108,17 @@ class Node{
         }
         this.#onDisconnect(connectInfo);
     }
+
+    getAllConnections(){
+        c=[]
+        for(const port of this.inputPorts){
+            c = c.concat(port.connectInfo);
+        }
+        for(const port of this.outputPorts){
+            c = c.concat(port.connectInfo);
+        }
+        return c;
+    }
 };
 
 /**
@@ -152,7 +164,13 @@ class OutputPort extends Port{
  */
  class NodeGraph{
     nodes=[];
-    maxIndex=-1;
+    #maxIndex=-1;
+    // events, subscribe to fetch the event
+    eventAddNode= new EventPublisher();
+    eventRemoveNode= new EventPublisher();
+    eventConnectNode= new EventPublisher();
+    eventDisconnectNode= new EventPublisher();
+    eventTryConnectNode= new EventPublisher();
     constructor(){
 
     }
@@ -165,13 +183,19 @@ class OutputPort extends Port{
      */
     addNode(_node){
         maxIndex++;
-        this.nodes[this.maxIndex] = _node;
-        _node.index=this.maxIndex;
+        this.nodes[this.#maxIndex] = _node;
+        _node.index=this.#maxIndex;
+        eventAddNode.notify(this,_node);
         return maxIndex;
     }
 
     removeNode(_node){
+        connections = _node.getAllConnections();
+        for(const connection of connections){
+            this.removeConnection(connection);
+        }
         delete this.nodes[_node.index];
+        eventRemoveNode.notify(this,_node);
     }
 
     getNodeByIndex(index){
@@ -198,7 +222,19 @@ class OutputPort extends Port{
         _outputNode.addConnection(connectInfo);
         _inputPort.addConnection(connectInfo);
         _outputPort.addConnection(connectInfo);
+        eventConnectNode.notify(this,connectionInfo);
         return connectInfo;
+    }
+
+    tryConnection(_inputPort,_inputNode,_outputPort,_outputNode){
+        eventTryConnectNode.notify(this,[_inputPort,_inputNode,_outputPort,_outputNode]);
+        if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
+            return false;
+        }
+        if(!DefinitionManager.isCompatType(_inputPort.typeName,_outputPort.typeName)){
+            return false;
+        }
+        return true;
     }
 
     removeConnection(connectInfo){
@@ -206,6 +242,7 @@ class OutputPort extends Port{
         connectInfo.outputNode.removeConnection(connectInfo);
         connectInfo.inputPort. removeConnection(connectInfo);
         connectInfo.outputPort.removeConnection(connectInfo);
+        eventDisconnectNode.notify(this,connectInfo);
     }
 
     /**
