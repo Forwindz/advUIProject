@@ -8,6 +8,7 @@ class UIBasic{
     renderData=[]; //Two.js objects
     rawData=null; //data model
     #uiContext=null;
+    #layout=null;
     constructor(_context){
         this.#uiContext = _context;
     }
@@ -15,26 +16,33 @@ class UIBasic{
     generateRenderData(){
 
     }
+
+    setLayout(){
+        
+    }
 }
 
 /**
  * Styles
  */
-class PortStyle{
-    static defaultStyle = new PortStyle(); // I want static const!!! :(
+
+class PortUIStyle{
+    //static defaultStyle = new PortStyle(); // I want static const!!! :(
     portHeight = 25;
     portWidth = 25;
     portTextPadding = 5;
     portTextColor = [0,0,0];
-}
+};
 
 class NodeUIStyle{
-    static defaultStyle = new NodeUIStyle();
     backGroundColor = [30,30,30];
     StrokeColor = [20,20,20];
     margin = [5,5,5,5];//top,left,bottom,right
     titleHeight = 30;
 }
+
+var defaultPortStyle = new PortUIStyle();
+var defaultNodeStyle = new NodeUIStyle();
 /**
  * This class generate rendering data for views
  * Also control interactions
@@ -52,8 +60,8 @@ class NodeUIControl extends UIBasic{
     #w=0;
     #h=0;
     
-    nodeStyle=NodeUIStyle.defaultStyle;
-    portStyle=PortStyle.defaultStyle;
+    nodeStyle=defaultNodeStyle;
+    portStyle=defaultPortStyle;
     /**
      * How to draw:
      *      _____________

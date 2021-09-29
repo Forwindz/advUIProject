@@ -26,13 +26,7 @@ class FlowLayout extends Layout{
         super();
     }
 
-    addObject(obj,constrain={align:AlignType.LEFT,newline:false}){
-        super.addObject(obj);
-    }
-
-    removeObject(obj){
-        super.removeObject(obj);
-    }
+    //addObject(obj,constrain={align:AlignType.LEFT,newline:false})
 
     /**
      * Relayout the elements
@@ -59,7 +53,7 @@ class FlowLayout extends Layout{
             
             let lineMaxHeight = 0;
             let lastElement=0;
-            for(let i=0;i<this.#objs.length;i++){
+            for(let i=0;i<this.objs.length;i++){
                 const w = obj.prefSize.width+obj.padding.left+obj.padding.right;
                 const h = obj.prefSize.height+obj.padding.top+obj.padding.bottom;
                 lineMaxHeight = Math.max(h,lineMaxHeight);
@@ -76,14 +70,14 @@ class FlowLayout extends Layout{
                     lineMaxHeight = 0;
                 }
             }
-            lineInfo.put({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:this.#objs.length+1});
+            lineInfo.put({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:this.objs.length+1});
 
             // now, we place the component
             let yOffset = 0;
             let xOffset = 0;
             for(line of lineInfo){
                 for(let j=line.elementBegin;j<line.elementEnd;j++){
-                    const obj = this.#objs[j];
+                    const obj = this.objs[j];
                     const w = obj.prefSize.width;
                     const h = obj.prefSize.height;
                     rect = {x:0,y:0,width:w,height:h};
