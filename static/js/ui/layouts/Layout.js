@@ -6,6 +6,7 @@ class Layout{
     }
     #dirty=false;
     objs=[];
+    curObj=null;
     reLayout(){
         this.#dirty=false;
     }

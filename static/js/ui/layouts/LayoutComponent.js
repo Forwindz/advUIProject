@@ -13,7 +13,7 @@ class LayoutComponent{
     layoutConstrain;
 
     constructor(){
-        //ValueChangeManager.install(this.rect);
+        ValueChangeManager.install(this.rect);
         ValueChangeManager.install(this.padding);
         ValueChangeManager.install(this.prefSize);
         //this.rect.addAllPropertiesListener((v)=> this.invalidLayout());
@@ -51,9 +51,11 @@ class LayoutComponent{
         oldLayout = this.layout;
         this.layout=v;
         this.Layout.objs=this.#objs;
+        this.layout.curObj=this;
         this.invalidLayout();
         if(oldLayout){
             oldLayout.objs=[];
+            oldLayout.curObj=null;
             oldLayout.invalid();
         }
     }

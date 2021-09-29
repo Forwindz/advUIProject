@@ -3,6 +3,9 @@
  */
 import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior} from "../data/ProgramDefine.js";
 import ValueChangeManager from "../util/ValueChangeManager.js";
+import TwoComp from "../ui/layouts/TwoComponents.js"
+import FlowLayout from "../ui/layouts/FlowLayout.js"
+import LayoutComponent from "../ui/layouts/LayoutComponent.js"
 
 class UIBasic{
     renderData=[]; //Two.js objects
@@ -18,7 +21,7 @@ class UIBasic{
     }
 
     setLayout(){
-        
+
     }
 }
 
@@ -62,6 +65,8 @@ class NodeUIControl extends UIBasic{
     
     nodeStyle=defaultNodeStyle;
     portStyle=defaultPortStyle;
+
+    nodePanelUI;
     /**
      * How to draw:
      *      _____________
@@ -80,18 +85,34 @@ class NodeUIControl extends UIBasic{
         if (!this.nodeStyle){
 
         }
-        const inputs = this.rawData.inputPorts;
-        const outputs = this.rawData.outputPorts;
+        this.#generateUI();
         
 
     }
 
-    #addBasicNodeUI(){
+    #generateUI(){
         const two = this.#uiContext;
-        two.makeRoundedRectangle()
-    }
-    #addInputPortUI(port){
+        TwoComp.context = two;
+        let nodePanelComp = TwoComp.makeEmptyComponent();
+        let layout = new FlowLayout();
+        nodePanelComp.setLayout(layout);
 
+        let nodeTitle = TwoComp.makeText("Title");
+        for(const port of this.rawData.inputPorts){
+            let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
+            let portText = TwoComp.makeText("Input Port Text");
+            nodePanelComp.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT});
+            nodePanelComp.addObject(portText,{newline:false,align:FlowLayout.AlignType.LEFT});
+        }
+        
+        for(const port of this.rawData.outputPorts){
+            let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
+            let portText = TwoComp.makeText("Output Port Text");
+            nodePanelComp.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.RIGHT});
+            nodePanelComp.addObject(portText,{newline:false,align:FlowLayout.AlignType.RIGHT});
+        }
+
+        this.nodePanelUI = nodePanelComp;
     }
 
 }

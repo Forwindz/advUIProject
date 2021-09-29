@@ -1,7 +1,7 @@
 
 
 class FlowLayout extends Layout{
-    static AlignType = {TOP:1,LEFT:2,BOTTOM:4,RIGHT:8,CENTER:0}; //TODO: simulate static const
+    static AlignType = {TOP:1,LEFT:2,BOTTOM:4,RIGHT:8,CENTERX:16,CENTERY:32}; //TODO: simulate static const
     static Orientation = {X:0,Y:1};
     /**
      * Constrain size
@@ -50,20 +50,23 @@ class FlowLayout extends Layout{
         if(orient ==Orientation.X){
             let leftWidth = this.constrainSize.width;
             let widthTotal=0;
-            
+            let maxWidth = 0;
             let lineMaxHeight = 0;
             let lastElement=0;
             for(let i=0;i<this.objs.length;i++){
                 const w = obj.prefSize.width+obj.padding.left+obj.padding.right;
                 const h = obj.prefSize.height+obj.padding.top+obj.padding.bottom;
                 lineMaxHeight = Math.max(h,lineMaxHeight);
-                if((leftWidth<0 || leftWidth>=w)&& !(obj.constrain.newline&& i!=0)){//enough width
+                if((this.constrainSize.width<0 || leftWidth>=w)&& !(obj.constrain.newline&& i!=0)){//enough width, newline is false
                     widthTotal+=w;
                     if(leftWidth>0){
                         leftWidth-=w;
                     }
-                }else{//inadequate width, place!
+                }else{//inadequate width, add one line!
                     lineInfo.put({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:i});
+                    if(this.constrainSize.width<0){
+                        maxWidth = Math.max(maxWidth,widthTotal);
+                    }
                     lastElement=i;
                     leftWidth = this.constrainSize.width;
                     widthTotal=0;
@@ -71,6 +74,9 @@ class FlowLayout extends Layout{
                 }
             }
             lineInfo.put({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:this.objs.length+1});
+            if(this.constrainSize.width<0){
+                maxWidth = Math.max(maxWidth,widthTotal);
+            }
 
             // now, we place the component
             let yOffset = 0;
@@ -86,6 +92,9 @@ class FlowLayout extends Layout{
                         rect.y = yOffset+obj.padding.top;
                     }else if(obj.constrain.align & FlowLayout.AlignType.BOTTOM){
                         rect.y = yOffset+line.height-h-obj.padding.bottom;
+                    }else if(obj.constrain.align & FlowLayout.AlignType.CENTERY){
+                        leftHeight = Math.floor((line.height-h-obj.padding.bottom-obj.padding.top)/2);
+                        rect.y = yOffset+obj.padding.top+leftHeight;
                     }
 
                     if(obj.constrain.align & FlowLayout.AlignType.LEFT){
@@ -98,18 +107,22 @@ class FlowLayout extends Layout{
                          *     ConstrainWidth-line.width
                          */
                         rect.x = xOffset+this.constrainSize.width-line.width+obj.padding.left;
-                    }
-
-                    if(obj.constrain.align == FlowLayout.AlignType.CENTER){
+                    }else if(obj.constrain.align & FlowLayout.AlignType.CENTERX){
                         leftWidth = Math.floor((this.constrainSize.width-line.width-obj.padding.left-obj.padding.right)/2);
-                        leftHeight = Math.floor((line.height-h-obj.padding.bottom-obj.padding.top)/2);
                         rect.x = xOffset+obj.padding.left+leftWidth;
-                        rect.y = yOffset+obj.padding.top+leftHeight;
                     }
                     
                     xOffset+=w+obj.padding.left+obj.padding.right;
                 }
                 yOffset+=line.height;
+            }
+
+            if(this.constrainSize.width<0){
+                this.curObj.rect.width = maxWidth;
+            }
+
+            if(this.constrainSize.height<0){
+                this.curObj.rect.height = maxHeight;
             }
         }else{
             console.warn("Y orient is not implemented for FlowLayout!");
@@ -118,3 +131,5 @@ class FlowLayout extends Layout{
     }
 
 }
+
+export default FlowLayout;
