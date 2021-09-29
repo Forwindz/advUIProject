@@ -4,15 +4,18 @@ class Layout{
     constructor(){
 
     }
-
+    #objs=[]
     #dirty=false;
 
-    addObject(obj){
+    addObject(obj,constrain){
         obj.layout = this;
+        obj.layoutConstrain = constrain;
+        this.#objs.push(obj);
     }
 
     removeObject(obj){
         obj.layout = null;
+        removeArrayValue(this.#objs,obj);
     }
 
     reLayout(){

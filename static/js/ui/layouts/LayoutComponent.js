@@ -6,18 +6,16 @@ import ValueChangeManager from "../util/ValueChangeManager.js";
  * input is a render object
  */
 class LayoutComponent{
-    #obj; //two.js object
-    
-    rect = {x:0,y:0,width:0,height:0};
-    padding = {top:0,left:0,bottom:0,right:0};//top,left,bottom,right
-    prefSize = {width:0,height:0};//preferred Size
+    rect = {x:0,y:0,width:0,height:0};//stored position info
+    padding = {top:0,left:0,bottom:0,right:0};
+    prefSize = {width:0,height:0};//preferred size, use by default
+    layoutConstrain;
 
-    constructor(obj){
-        this.#obj = obj;
-        ValueChangeManager.install(this.rect);
+    constructor(){
+        //ValueChangeManager.install(this.rect);
         ValueChangeManager.install(this.padding);
         ValueChangeManager.install(this.prefSize);
-        this.rect.addAllPropertiesListener((v)=> this.invalidLayout());
+        //this.rect.addAllPropertiesListener((v)=> this.invalidLayout());
         this.padding.addAllPropertiesListener((v)=> this.invalidLayout());
         this.prefSize.addAllPropertiesListener((v)=> this.invalidLayout());
     }
