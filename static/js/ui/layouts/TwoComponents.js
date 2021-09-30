@@ -1,8 +1,9 @@
-import Two from "two"
+import Two from "../../lib/two.js"
 import LayoutComponent from "./LayoutComponent.js"
 
+var twoCompContext = null;
+
 var TwoComp={
-    context = null,
 
     /**
      * 
@@ -25,15 +26,18 @@ var TwoComp={
         return comp;
     },
 
-    #makeComponent: function(shape,width, height,padTop=0,padLeft=0,padBottom=0,padRight=0){
+    makeComponent: function(shape,width, height,padTop=0,padLeft=0,padBottom=0,padRight=0){
         let comp = new LayoutComponent();
         comp.shape = shape;
-        comp.prefSize.width = width;
-        comp.prefSize.height = height;
+        comp.rect.width = comp.prefSize.width = width;
+        comp.rect.height = comp.prefSize.height = height;
         comp.padding.top = padTop;
         comp.padding.left = padLeft;
         comp.padding.bottom = padBottom;
         comp.padding.height = padHeight;
+        //bind data
+        comp.rect.addPropertyListener("x",(x)=>shape.translation.set(x,shape.translation.y));
+        comp.rect.addPropertyListener("y",(y)=>shape.translation.set(shape.translation.x,y));
         return comp;
     },
 
@@ -52,8 +56,8 @@ var TwoComp={
      * @returns {LayoutComponent}
      */
     makeRectangle: function(x, y, width, height,padTop=0,padLeft=0,padBottom=0,padRight=0){
-        let shape = this.context.makeRectangle(x, y, width, height);
-        let comp = this.#makeComponent(shape,width,height,padTop,padLeft,padBottom,padRight);
+        let shape = twoCompContext.makeRectangle(x, y, width, height);
+        let comp = this.makeComponent(shape,width,height,padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
@@ -70,21 +74,21 @@ var TwoComp={
      * @returns {LayoutComponent}
      */
     makeRoundedRectangle: function(x, y, width, height, padTop=0,padLeft=0,padBottom=0,padRight=0){
-        let shape = this.context.makeRectangle(x, y, width, height);
-        let comp = this.#makeComponent(shape,width,height,padTop,padLeft,padBottom,padRight);
+        let shape = twoCompContext.makeRectangle(x, y, width, height);
+        let comp = this.makeComponent(shape,width,height,padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
     makeTwoObj:function(obj, padTop=0,padLeft=0,padBottom=0,padRight=0){
         let rect = obj.getBoundingClientRect();
-        let comp = this.#makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padRight);
+        let comp = this.makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
     makeText:function(text, style={}, padTop=0,padLeft=0,padBottom=0,padRight=0){
         let obj = new Two.Text(text,0,0,style);
         let rect = obj.getBoundingClientRect();
-        let comp = this.#makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padRight);
+        let comp = this.makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padRight);
         return comp;
     },
 

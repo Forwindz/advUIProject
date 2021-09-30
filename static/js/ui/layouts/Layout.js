@@ -1,5 +1,3 @@
-import LayoutComponent from "./LayoutComponent";
-import removeArrayValue from "../util/utils.js"
 class Layout{
     constructor(){
 
@@ -19,3 +17,5 @@ class Layout{
         return this.#dirty;
     }
 }
+
+export default Layout;

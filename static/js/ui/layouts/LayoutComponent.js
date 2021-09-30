@@ -1,5 +1,4 @@
-import Two from "two";
-import ValueChangeManager from "../util/ValueChangeManager.js";
+import ValueChangeManager from "../../util/ValueChangeManager.js";
 
 /**
  * Component for layouts,

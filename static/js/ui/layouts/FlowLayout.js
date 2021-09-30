@@ -1,4 +1,4 @@
-
+import Layout from "./Layout.js"
 
 class FlowLayout extends Layout{
     static AlignType = {TOP:1,LEFT:2,BOTTOM:4,RIGHT:8,CENTERX:16,CENTERY:32}; //TODO: simulate static const

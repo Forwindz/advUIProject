@@ -10,10 +10,10 @@ import LayoutComponent from "../ui/layouts/LayoutComponent.js"
 class UIBasic{
     renderData=[]; //Two.js objects
     rawData=null; //data model
-    #uiContext=null;
-    #layout=null;
+    uiContext=null;
+    layout=null;
     constructor(_context){
-        this.#uiContext = _context;
+        this.uiContext = _context;
     }
 
     generateRenderData(){
@@ -91,7 +91,7 @@ class NodeUIControl extends UIBasic{
     }
 
     #generateUI(){
-        const two = this.#uiContext;
+        const two = this.uiContext;
         TwoComp.context = two;
         let nodePanelComp = TwoComp.makeEmptyComponent();
         let layout = new FlowLayout();
@@ -112,6 +112,8 @@ class NodeUIControl extends UIBasic{
             nodePanelComp.addObject(portText,{newline:false,align:FlowLayout.AlignType.RIGHT});
         }
 
+        nodePanelComp.reLayout();
+
         this.nodePanelUI = nodePanelComp;
     }
 
@@ -125,4 +127,4 @@ class ConnectionUIData extends UIBasic{
     }
 }
 
-export{NodeUIData, ConnectionUIData, NodeGraphUIData}
+export{NodeUIControl}
