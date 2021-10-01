@@ -20,26 +20,26 @@ class LayoutComponent{
         this.prefSize.addAllPropertiesListener((v)=> this.invalidLayout());
     }
 
-    father;
-    layout = null;
+    #father = null;
+    #layout = null;
     get father(){
-        return this.father;
+        return this.#father;
     }
     /**
      * @param {LayoutComponent} v
      */
     set father(v){
-        if(father==this.father){
+        if(v==this.#father){
             return;
         }
-        oldFather = this.father;
-        this.father=v;
+        let oldFather = this.#father;
+        this.#father=v;
         // invalid layouts
         if(oldFather){
             oldFather.invalidLayout();
         }
-        if(this.father){
-            this.father.invalidLayout();
+        if(this.#father){
+            this.#father.invalidLayout();
         }
     }
 
@@ -47,10 +47,10 @@ class LayoutComponent{
      * @param {Layout} v
      */
     set layout(v){
-        oldLayout = this.layout;
-        this.layout=v;
-        this.Layout.objs=this.#objs;
-        this.layout.curObj=this;
+        let oldLayout = this.#layout;
+        this.#layout=v;
+        this.#layout.objs=this.#objs;
+        this.#layout.curObj=this;
         this.invalidLayout();
         if(oldLayout){
             oldLayout.objs=[];
@@ -60,26 +60,26 @@ class LayoutComponent{
     }
 
     invalidLayout(){
-        if(this.layout){
-            this.layout.invalid();
+        if(this.#layout){
+            this.#layout.invalid();
         }
-        if(this.father){
-            this.father.invalid();
+        if(this.#father){
+            this.#father.invalid();
         }
     }
 
-    addObject(obj,constrain={align:AlignType.LEFT,newline:false}){
+    addObject(obj,constrain=null){
         this.#objs.push(obj);
         obj.father=this;
-        this.layoutConstrain=constrain;
-        invalidLayout();
+        obj.constrain=constrain;
+        this.invalidLayout();
     }
 
     removeObject(obj){
         obj.layout = null;
         obj.father = null;
         removeArrayValue(this.#objs,obj);
-        invalidLayout();
+        this.invalidLayout();
     }
 
     

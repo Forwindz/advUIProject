@@ -12,7 +12,7 @@ class FlowLayout extends Layout{
     /**
      * Oritantion, currently we only support X
      */
-    orient = Orientation.X;
+    orient = FlowLayout.Orientation.X;
 
     /**
      * @param {number} v
@@ -47,13 +47,14 @@ class FlowLayout extends Layout{
          * each row's width/height, element assigned [elementBegin,elementEnd)
          */
         let lineInfo=[]
-        if(orient ==Orientation.X){
+        if(this.orient ==FlowLayout.Orientation.X){
             let leftWidth = this.constrainSize.width;
             let widthTotal=0;
             let maxWidth = 0;
             let lineMaxHeight = 0;
             let lastElement=0;
             for(let i=0;i<this.objs.length;i++){
+                const obj = this.objs[i];
                 const w = obj.prefSize.width+obj.padding.left+obj.padding.right;
                 const h = obj.prefSize.height+obj.padding.top+obj.padding.bottom;
                 lineMaxHeight = Math.max(h,lineMaxHeight);
@@ -63,7 +64,7 @@ class FlowLayout extends Layout{
                         leftWidth-=w;
                     }
                 }else{//inadequate width, add one line!
-                    lineInfo.put({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:i});
+                    lineInfo.push({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:i});
                     if(this.constrainSize.width<0){
                         maxWidth = Math.max(maxWidth,widthTotal);
                     }
@@ -73,7 +74,7 @@ class FlowLayout extends Layout{
                     lineMaxHeight = 0;
                 }
             }
-            lineInfo.put({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:this.objs.length+1});
+            lineInfo.push({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:this.objs.length});
             if(this.constrainSize.width<0){
                 maxWidth = Math.max(maxWidth,widthTotal);
             }
@@ -81,19 +82,21 @@ class FlowLayout extends Layout{
             // now, we place the component
             let yOffset = 0;
             let xOffset = 0;
-            for(line of lineInfo){
+            for(const line of lineInfo){
                 for(let j=line.elementBegin;j<line.elementEnd;j++){
                     const obj = this.objs[j];
+                    console.log(obj);
+                    console.log(j);
                     const w = obj.prefSize.width;
                     const h = obj.prefSize.height;
-                    rect = {x:0,y:0,width:w,height:h};
+                    let rect = {x:0,y:0};
 
                     if(obj.constrain.align & FlowLayout.AlignType.TOP){
                         rect.y = yOffset+obj.padding.top;
                     }else if(obj.constrain.align & FlowLayout.AlignType.BOTTOM){
                         rect.y = yOffset+line.height-h-obj.padding.bottom;
                     }else if(obj.constrain.align & FlowLayout.AlignType.CENTERY){
-                        leftHeight = Math.floor((line.height-h-obj.padding.bottom-obj.padding.top)/2);
+                        let leftHeight = Math.floor((line.height-h-obj.padding.bottom-obj.padding.top)/2);
                         rect.y = yOffset+obj.padding.top+leftHeight;
                     }
 
@@ -108,9 +111,12 @@ class FlowLayout extends Layout{
                          */
                         rect.x = xOffset+this.constrainSize.width-line.width+obj.padding.left;
                     }else if(obj.constrain.align & FlowLayout.AlignType.CENTERX){
-                        leftWidth = Math.floor((this.constrainSize.width-line.width-obj.padding.left-obj.padding.right)/2);
+                        let leftWidth = Math.floor((this.constrainSize.width-line.width-obj.padding.left-obj.padding.right)/2);
                         rect.x = xOffset+obj.padding.left+leftWidth;
                     }
+
+                    obj.rect.x=rect.x;
+                    obj.rect.y=rect.y;
                     
                     xOffset+=w+obj.padding.left+obj.padding.right;
                 }
@@ -122,7 +128,7 @@ class FlowLayout extends Layout{
             }
 
             if(this.constrainSize.height<0){
-                this.curObj.rect.height = maxHeight;
+                this.curObj.rect.height = yOffset;
             }
         }else{
             console.warn("Y orient is not implemented for FlowLayout!");

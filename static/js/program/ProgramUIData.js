@@ -54,7 +54,8 @@ var defaultNodeStyle = new NodeUIStyle();
  * Therefore, this class is mainly designed for install rendering elements and interactions
  */
 class NodeUIControl extends UIBasic{
-    constructor(){
+    constructor(_context){
+        super(_context);
         //TODO: add style change listener
     }
 
@@ -92,27 +93,30 @@ class NodeUIControl extends UIBasic{
 
     #generateUI(){
         const two = this.uiContext;
-        TwoComp.context = two;
+        TwoComp.setContext(two);
         let nodePanelComp = TwoComp.makeEmptyComponent();
         let layout = new FlowLayout();
-        nodePanelComp.setLayout(layout);
+        nodePanelComp.layout=layout;
 
         let nodeTitle = TwoComp.makeText("Title");
-        for(const port of this.rawData.inputPorts){
+        nodePanelComp.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTERX|FlowLayout.AlignType.CENTERY});
+        for(const portKey of Object.keys(this.rawData.inputPorts)){
             let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
-            let portText = TwoComp.makeText("Input Port Text");
+            let portText = TwoComp.makeText(portKey);
             nodePanelComp.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT});
             nodePanelComp.addObject(portText,{newline:false,align:FlowLayout.AlignType.LEFT});
         }
         
-        for(const port of this.rawData.outputPorts){
+        for(const portKey of Object.keys(this.rawData.outputPorts)){
             let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
-            let portText = TwoComp.makeText("Output Port Text");
+            let portText = TwoComp.makeText(portKey);
             nodePanelComp.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.RIGHT});
             nodePanelComp.addObject(portText,{newline:false,align:FlowLayout.AlignType.RIGHT});
         }
+        console.log(this.rawData.inputPorts);
+        console.log(layout);
 
-        nodePanelComp.reLayout();
+        layout.reLayout();
 
         this.nodePanelUI = nodePanelComp;
     }

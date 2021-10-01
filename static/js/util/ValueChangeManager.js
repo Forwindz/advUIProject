@@ -2,8 +2,8 @@
 class ValueChangeManager{
     static install(obj){
         obj.addPropertyListener = ValueChangeManager.prototype.addPropertyListener;
-        obj.addPropertyListener = ValueChangeManager.prototype.addPropertiesListener;
-        obj.addPropertyListener = ValueChangeManager.prototype.addAllPropertiesListener;
+        obj.addPropertiesListener = ValueChangeManager.prototype.addPropertiesListener;
+        obj.addAllPropertiesListener = ValueChangeManager.prototype.addAllPropertiesListener;
     }
 
     addPropertyListener(name, listener){

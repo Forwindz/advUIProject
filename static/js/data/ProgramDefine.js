@@ -45,8 +45,8 @@ class NodeConnectInfo{
  */
 class Node{
     name="Node";
-    inputPorts=[];
-    outputPorts=[];
+    inputPorts={};
+    outputPorts={};
 
     constructor(){
         this.defineNode();
@@ -56,6 +56,12 @@ class Node{
         
     }
 
+    /**
+     * 
+     * @param {string} _name 
+     * @param {string} _typeName 
+     * @param {*} _defaultValue 
+     */
     addInputPort(_name,_typeName,_defaultValue=null){
         let port = new InputPort(_name,_typeName,_defaultValue);
         this.inputPorts[_name]=port;
@@ -148,7 +154,7 @@ class InputPort extends Port{
     defaultValue=null;
     constructor(_name,_type,_defaultValue=null){
         super(_name,_type);
-        defaultValue=_defaultValue
+        this.defaultValue=_defaultValue
     }
     
 };
@@ -182,11 +188,11 @@ class OutputPort extends Port{
      * @returns {number} the index of the node
      */
     addNode(_node){
-        maxIndex++;
+        this.#maxIndex++;
         this.nodes[this.#maxIndex] = _node;
         _node.index=this.#maxIndex;
-        eventAddNode.notify(this,_node);
-        return maxIndex;
+        this.eventAddNode.notify(this,_node);
+        return this.#maxIndex;
     }
 
     removeNode(_node){
@@ -195,7 +201,7 @@ class OutputPort extends Port{
             this.removeConnection(connection);
         }
         delete this.nodes[_node.index];
-        eventRemoveNode.notify(this,_node);
+        this.eventRemoveNode.notify(this,_node);
     }
 
     getNodeByIndex(index){
@@ -222,12 +228,12 @@ class OutputPort extends Port{
         _outputNode.addConnection(connectInfo);
         _inputPort.addConnection(connectInfo);
         _outputPort.addConnection(connectInfo);
-        eventConnectNode.notify(this,connectionInfo);
+        this.eventConnectNode.notify(this,connectionInfo);
         return connectInfo;
     }
 
     tryConnection(_inputPort,_inputNode,_outputPort,_outputNode){
-        eventTryConnectNode.notify(this,[_inputPort,_inputNode,_outputPort,_outputNode]);
+        this.eventTryConnectNode.notify(this,[_inputPort,_inputNode,_outputPort,_outputNode]);
         if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
             return false;
         }
@@ -242,7 +248,7 @@ class OutputPort extends Port{
         connectInfo.outputNode.removeConnection(connectInfo);
         connectInfo.inputPort. removeConnection(connectInfo);
         connectInfo.outputPort.removeConnection(connectInfo);
-        eventDisconnectNode.notify(this,connectInfo);
+        this.eventDisconnectNode.notify(this,connectInfo);
     }
 
     /**
