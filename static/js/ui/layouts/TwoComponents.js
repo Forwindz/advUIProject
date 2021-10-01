@@ -88,6 +88,7 @@ var TwoComp={
     makeText:function(text, style={}, padTop=0,padLeft=0,padBottom=0,padHeight=0){
         let obj = new Two.Text(text,0,0,style);
         let rect = obj.getBoundingClientRect();
+        console.log(rect);
         let comp = this.makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
         return comp;
     },

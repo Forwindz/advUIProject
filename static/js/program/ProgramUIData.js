@@ -99,7 +99,7 @@ class NodeUIControl extends UIBasic{
         nodePanelComp.layout=layout;
 
         let nodeTitle = TwoComp.makeText("Title");
-        nodePanelComp.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTERX|FlowLayout.AlignType.CENTERY});
+        nodePanelComp.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
         for(const portKey of Object.keys(this.rawData.inputPorts)){
             let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
             let portText = TwoComp.makeText(portKey);
@@ -110,8 +110,8 @@ class NodeUIControl extends UIBasic{
         for(const portKey of Object.keys(this.rawData.outputPorts)){
             let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
             let portText = TwoComp.makeText(portKey);
-            nodePanelComp.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.RIGHT});
-            nodePanelComp.addObject(portText,{newline:false,align:FlowLayout.AlignType.RIGHT});
+            nodePanelComp.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT});
+            nodePanelComp.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT});
         }
         console.log(this.rawData.inputPorts);
         console.log(layout);

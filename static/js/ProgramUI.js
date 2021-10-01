@@ -14,7 +14,7 @@ function defineOneNode(){
 }
 export function mainProgramming() {
     var elem = document.getElementById('test');
-    let params = { width: 285, height: 200 };
+    let params = { width: 800, height: 800 };
     //var two = new Two(params).appendTo(elem);
     var context = buildContext(elem,params);
 /*
