@@ -85,11 +85,16 @@ var TwoComp={
         return comp;
     },
 
-    makeText:function(text, style={}, padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        let obj = new Two.Text(text,0,0,style);
+    makeText:function(text, style={baseline:"top",alignment:"left"}, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+        let obj = twoCompContext.makeText(text,0,0,style);
         let rect = obj.getBoundingClientRect();
         console.log(rect);
-        let comp = this.makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
+        let comp = this.makeEmptyComponent(rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
+        comp.shape = obj;
+        //TODO: add listener according alignment, currently we use default valuea
+        //comp.rect.addPropertyListener("x",(x)=>obj.translation.set(x+comp.prefSize.width/2,obj.translation.y));
+        comp.rect.addPropertyListener("x",(x)=>obj.translation.set(x,obj.translation.y));
+        comp.rect.addPropertyListener("y",(y)=>obj.translation.set(obj.translation.x,y+comp.prefSize.height/2));
         return comp;
     },
 

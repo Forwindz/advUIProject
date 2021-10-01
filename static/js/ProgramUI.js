@@ -15,6 +15,7 @@ function defineOneNode(){
 export function mainProgramming() {
     var elem = document.getElementById('test');
     let params = { width: 800, height: 800 };
+    //params = { fullscreen:true };
     //var two = new Two(params).appendTo(elem);
     var context = buildContext(elem,params);
 /*

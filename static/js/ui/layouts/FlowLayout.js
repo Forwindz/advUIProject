@@ -76,6 +76,7 @@ class FlowLayout extends Layout{
                     lineMaxHeight = h;
                 }
                 //check alignment settings: can be commented
+                /*
                 let a=obj.constrain.align;
                 let xCount=0;
                 let yCount=0;
@@ -90,11 +91,11 @@ class FlowLayout extends Layout{
                 }
                 if(xCount>1){
                     console.warn("Wrong setting in FlowLayout, Y alignment for"+obj);
-                }
+                }*/
                 
             }
             lineInfo.push({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:this.objs.length});
-            //console.log(lineInfo);
+            console.log(lineInfo);
             if(this.constrainSize.width<0){
                 maxWidth = Math.max(maxWidth,widthTotal);
             }
@@ -135,6 +136,7 @@ class FlowLayout extends Layout{
 
                     obj.rect.x=rect.x;
                     obj.rect.y=rect.y;
+                    console.log(rect);
                     xOffset+=w+obj.padding.left+obj.padding.right;
                 }
                 yOffset+=line.height;
