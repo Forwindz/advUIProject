@@ -151,7 +151,7 @@ class FlowLayout extends Layout{
                 this.curObj.rect.height = yOffset;
             }
         }else{
-            console.warn("Y orient is not implemented for FlowLayout!");
+            console.warn("Y orientation is not implemented for FlowLayout!");
         }
         super.reLayout();
     }

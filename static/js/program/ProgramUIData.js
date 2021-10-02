@@ -5,7 +5,7 @@ import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior} from "..
 import ValueChangeManager from "../util/ValueChangeManager.js";
 import TwoComp from "../ui/layouts/TwoComponents.js"
 import FlowLayout from "../ui/layouts/FlowLayout.js"
-import LayoutComponent from "../ui/layouts/LayoutComponent.js"
+//import LayoutComponent from "../ui/layouts/LayoutComponent.js"
 
 class UIBasic{
     renderData=[]; //Two.js objects
@@ -46,6 +46,7 @@ class NodeUIStyle{
 
 var defaultPortStyle = new PortUIStyle();
 var defaultNodeStyle = new NodeUIStyle();
+
 /**
  * This class generate rendering data for views
  * Also control interactions
@@ -98,8 +99,10 @@ class NodeUIControl extends UIBasic{
         let layout = new FlowLayout();
         nodePanelComp.layout=layout;
 
+        console.log("gen UI");
         let nodeTitle = TwoComp.makeText("Title");
         nodePanelComp.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
+        
         for(const portKey of Object.keys(this.rawData.inputPorts)){
             let portIcon = TwoComp.makeRectangle(0,0,9,9,5,5,5,5);
             let portText = TwoComp.makeText(portKey);
@@ -113,7 +116,7 @@ class NodeUIControl extends UIBasic{
             nodePanelComp.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT});
             nodePanelComp.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT});
         }
-        console.log(this.rawData.inputPorts);
+        console.log(nodePanelComp);
         console.log(layout);
 
         layout.reLayout();

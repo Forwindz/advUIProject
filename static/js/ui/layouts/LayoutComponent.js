@@ -8,7 +8,7 @@ class LayoutComponent{
     rect = {x:0,y:0,width:0,height:0};//stored position info
     padding = {top:0,left:0,bottom:0,right:0};
     prefSize = {width:0,height:0};//preferred size, use by default
-    #objs=[];
+    #objs= new Array();
     constrain;
 
     constructor(){
@@ -22,6 +22,7 @@ class LayoutComponent{
 
     #father = null;
     #layout = null;
+
     get father(){
         return this.#father;
     }
@@ -37,9 +38,11 @@ class LayoutComponent{
         // invalid layouts
         if(oldFather){
             oldFather.invalidLayout();
+            removeArrayValue(oldFather.#objs,this);
         }
         if(this.#father){
             this.#father.invalidLayout();
+            this.#father.#objs.push(this);
         }
     }
 
@@ -69,17 +72,13 @@ class LayoutComponent{
     }
 
     addObject(obj,constrain=null){
-        this.#objs.push(obj);
-        obj.father=this;
         obj.constrain=constrain;
-        this.invalidLayout();
+        obj.father=this;
     }
 
     removeObject(obj){
         obj.layout = null;
         obj.father = null;
-        removeArrayValue(this.#objs,obj);
-        this.invalidLayout();
     }
 
     
