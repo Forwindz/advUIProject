@@ -136,7 +136,6 @@ class FlowLayout extends Layout{
 
                     obj.rect.x=rect.x;
                     obj.rect.y=rect.y;
-                    console.log(rect);
                     xOffset+=w+obj.padding.left+obj.padding.right;
                 }
                 yOffset+=line.height;

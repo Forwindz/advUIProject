@@ -27,6 +27,9 @@ class ValueChangeManager{
     }
     addAllPropertiesListener(listener){
         for(const name in this){
+            if(typeof this[name] == "function"){
+                continue;
+            }
             this.addPropertyListener(name,listener);
         }
     }

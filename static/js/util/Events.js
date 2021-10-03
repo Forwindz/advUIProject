@@ -6,7 +6,7 @@ class EventPublisher{
     }
 
     add(listener){
-        this.#subscribers.add(listener);
+        this.#subscribers.push(listener);
     }
 
     remove(listener){
@@ -14,7 +14,7 @@ class EventPublisher{
     }
 
     notify(source, params){
-        for (subscriber of this.#subscribers){
+        for (const subscriber of this.#subscribers){
             subscriber(source, params);
         }
     }

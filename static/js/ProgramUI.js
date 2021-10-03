@@ -1,7 +1,7 @@
 import Two from "./lib/two.js"
 import * as Define from "./data/ProgramDefine.js"
 import {buildContext} from "./ui/uiContext.js"
-import {NodeUIControl} from "./program/ProgramUIData.js"
+import {NodeGroupUI} from "./program/NodeGroupUI.js"
 
 function defineOneNode(){
     // test codes
@@ -35,13 +35,12 @@ export function mainProgramming() {
     // to the screen
     
     let a = new Define.NodeGraph();
+    let nodeGroupUI = new NodeGroupUI(context,a);
     let node1 = defineOneNode();
-    a.addNode(node1);
-    let nodeUI = new NodeUIControl(context, node1);
-    nodeUI.uiData.rect.x = 100;
-    nodeUI.uiData.rect.y = 50;
+    nodeGroupUI.addNode(node1,100,200);
+    let node2 = defineOneNode();
+    nodeGroupUI.addNode(node2,200,233);
 
-    nodeUI.uiData.rect.y = 150;
-    console.log(nodeUI);
+    console.log(nodeGroupUI);
     context.update();
 }

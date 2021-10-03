@@ -62,6 +62,10 @@ class LayoutComponent{
         }
     }
 
+    get layout(){
+        return this.#layout;
+    }
+
     invalidLayout(){
         if(this.#layout){
             this.#layout.invalid();

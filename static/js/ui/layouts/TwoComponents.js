@@ -1,32 +1,32 @@
 import Two from "../../lib/two.js"
 import LayoutComponent from "./LayoutComponent.js";
-
-var twoCompContext = null;
-
 class TwoCompponent extends LayoutComponent{
     
     #shape;
     #shapeDom;
     #shapeGroup = null;
+    #context;
 
-    constructor(shape=null){
+    constructor(context,shape=null){
         super();
+        this.#context=context;
         this.shape=shape;
-        /*
-        if(!shape){
-            this.#createGroup();
-            this.shape=this.#shapeGroup;
-        }*/
     }
 
     set shape(v){
         if(v){
             this.#shape=v;
-            twoCompContext.bindOnce("afterUpdate",()=>this.updateDom());
+            this.#context.bindOnce("afterUpdate",()=>this.updateDom());
+
+            let r = this.#shape.getBoundingClientRect();
+            this.prefSize.width = r.width;
+            this.prefSize.height = r.height;
+
         }else{
             this.#shape=null;
             this.#shapeDom=null;
         }
+        this.invalidLayout();
     }
 
     get shape(){
@@ -37,13 +37,15 @@ class TwoCompponent extends LayoutComponent{
         return this.#shapeDom;
     }
 
+    get context(){
+        return this.#context;
+    }
+
     updateDom(){
         if(this.#shape){
             this.#shapeDom = document.getElementById(this.#shape.id);
         }
     }
-
-
 
     addObject(obj,constrain=null){
         super.addObject(obj,constrain);
@@ -61,7 +63,7 @@ class TwoCompponent extends LayoutComponent{
     }
 
     #createGroup(){
-        this.#shapeGroup = twoCompContext.makeGroup();
+        this.#shapeGroup = this.#context.makeGroup();
         this.rect.addPropertyListener("x",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
         this.rect.addPropertyListener("y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
     }
@@ -71,36 +73,108 @@ class TwoCompponent extends LayoutComponent{
         this.padding.left = padLeft;
         this.padding.bottom = padBottom;
         this.padding.height = padHeight;
+        this.invalidLayout();
     }
 
 }
 
 class PathComponent extends TwoCompponent{
-    constructor(shape){
-        super(shape);
+    constructor(context,shape=null){
+        super(context,shape);
         this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
     }
 }
 
 class TextComponent extends TwoCompponent{
-    constructor(shape){
-        super(shape);
+    constructor(context,shape=null){
+        super(context,shape);
         this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.prefSize.height/2));
+        // adjust according to default text align settings
+        // TODO: support more text align settings
     }
 }
 
 class RectComponent extends TwoCompponent{
-    constructor(shape){
-        super(shape);
+
+    /**
+     * Two.js not support change width and height
+     * They say... use transform maxtrix is okay.... (f*ck)
+     * Therefore, we store original width and height,
+     * and use 
+     */
+
+    #width=0;
+    #height=0;
+
+    setSize(width,height){
+        this.#width=width;
+        this.#height=height;
+        this.updateRectSize();
+    }
+
+    set width(v){
+        this.#width=v;
+        this.updateRectSize();
+    }
+
+    set height(v){
+        this.#height=v;
+        this.updateRectSize();
+    }
+
+    get width(){
+        return this.#width;
+    }
+
+    get height(){
+        return this.#height;
+    }
+
+    set shape(v){
+        super.shape=v;
+        if(v){
+            this.#width = v.vertices[1].x*2;
+            this.#height = v.vertices[2].y*2;
+        }
+    }
+
+    get shape(){
+        return super.shape;
+    }
+
+    constructor(context,shape=null){
+        super(context,null);
+        this.shape=shape;
+        console.log(shape);
+        console.log(shape.translation);
         this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
-        this.rect.addPropertyListener("width",(v)=>this.shape.width = v);
-        this.rect.addPropertyListener("height",(v)=>this.shape.height = v);
+        this.rect.addPropertyListener("width",(v)=>this.width = v);
+        this.rect.addPropertyListener("height",(v)=>this.height = v);
     }
-}
 
+    updateRectSize(){
+        if(!this.shape){
+            return;
+        }
+        let vs = this.shape.vertices;
+                        //x y
+        let v0 = vs[0]; //- -
+        let v1 = vs[1]; //+ -
+        let v2 = vs[2]; //+ +
+        let v3 = vs[3]; //- +
+
+        const halfX = this.#width/2;
+        const halfY = this.#height/2;
+        v0.x = -halfX; v0.y = -halfY;
+        v1.x =  halfX; v1.y = -halfY;
+        v2.x =  halfX; v2.y =  halfY;
+        v3.x = -halfX; v3.y =  halfY;
+    }
+
+}
 
 var TwoComp={
 
@@ -114,8 +188,8 @@ var TwoComp={
      * @param {number} padHeight 
      * @returns {TwoCompponent}
      */
-    makeEmptyComponent: function(width=0, height=0,padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        let comp = new TwoCompponent(null);
+    makeEmptyComponent: function(context,width=0, height=0,padTop=0,padLeft=0,padBottom=0,padHeight=0){
+        let comp = new TwoCompponent(context,null);
         comp.prefSize.width = width;
         comp.prefSize.height = height;
         comp.padding.top = padTop;
@@ -125,16 +199,10 @@ var TwoComp={
         return comp;
     },
 
-    makeComponent: function(shape,width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        let comp = new PathComponent(shape);
-        this.setupComponent(comp,width, height,padTop,padLeft,padBottom,padHeight);
+    makeComponent: function(context,shape,padTop=0,padLeft=0,padBottom=0,padHeight=0){
+        let comp = new PathComponent(context,shape);
+        this.setupComponent(comp,padTop,padLeft,padBottom,padHeight);
         return comp;
-    },
-
-    setupComponent: function(comp,width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        comp.rect.width = comp.prefSize.width = width;
-        comp.rect.height = comp.prefSize.height = height;
-        comp.setPadding(padTop,padLeft,padBottom,padHeight);
     },
 
     //TODO: add listeners to prefSize; (maybe I will not use this)
@@ -151,11 +219,10 @@ var TwoComp={
      * @param {number} padHeight 
      * @returns {TwoCompponent}
      */
-    makeRectangle: function(x, y, width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        //let shape = twoCompContext.makeRectangle(x, y, width, height);
+    makeRectangle: function(context,x, y, width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
         let shape = new Two.Rectangle(x, y, width, height);
-        let comp = new RectComponent(shape);
-        this.setupComponent(comp,width,height,padTop,padLeft,padBottom,padHeight);
+        let comp = new RectComponent(context,shape);
+        comp.setPadding(padTop,padLeft,padBottom,padHeight);
         return comp;
     },
 
@@ -171,48 +238,31 @@ var TwoComp={
      * @param {number} padHeight 
      * @returns {TwoCompponent}
      */
-    makeRoundedRectangle: function(x, y, width, height, padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        //let shape = twoCompContext.makeRectangle(x, y, width, height);
+    makeRoundedRectangle: function(context,x, y, width, height, padTop=0,padLeft=0,padBottom=0,padHeight=0){
         let shape = new Two.RoundedRectangle(x, y, width, height);
-        let comp = new RectComponent(shape);
-        this.setupComponent(comp,width,height,padTop,padLeft,padBottom,padHeight);
+        let comp = new RectComponent(context,shape);
+        comp.setPadding(padTop,padLeft,padBottom,padHeight);
         return comp;
     },
 
-    makeTwoObj:function(obj, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeTwoObj:function(context,obj, padTop=0,padLeft=0,padBottom=0,padHeight=0){
         let rect = obj.getBoundingClientRect();
-        let comp = this.makeComponent(obj,rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
+        let comp = this.makeComponent(context,obj,rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
         return comp;
     },
 
-    makeText:function(text, style={baseline:"top",alignment:"left"},x=0,y=0, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeText:function(context,text, style={baseline:"top",alignment:"left"},x=0,y=0, padTop=0,padLeft=0,padBottom=0,padHeight=0){
         let shape = new Two.Text(text,x,y,style);
-        let comp = new TextComponent(shape);
-        let r = shape.getBoundingClientRect();
-        this.setupComponent(comp,r.width,r.height,padTop,padLeft,padBottom,padHeight);
+        let comp = new TextComponent(context,shape);
+        comp.setPadding(padTop,padLeft,padBottom,padHeight);
         return comp;
     },
-/*
-    getSubShapes:function(comp){
-        shapes=[]
-        for(const obj of comp.objs){
-            shapes.push(obj);
-        }
-        return shapes;
-    },*/
 
     makeTextEdit:function(x, y, width, height, padTop=0, padLeft=0, padBottom=0, padHeight=0){
         let dom = document.createElement("input");
         //TODO!!!
-    },
-
-    setContext:function(context){
-        twoCompContext = context;
-    },
-
-    addUpdateTodo:function(func){
-        twoPendingEvents[twoCompContext]
     }
 }
 
 export default TwoComp;
+export {TwoCompponent,RectComponent,TextComponent};
