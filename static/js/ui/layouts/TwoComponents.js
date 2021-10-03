@@ -68,11 +68,11 @@ class TwoCompponent extends LayoutComponent{
         this.rect.addPropertyListener("y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
     }
 
-    setPadding(padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    setPadding(padTop=0,padLeft=0,padBottom=0,padReight=0){
         this.padding.top = padTop;
         this.padding.left = padLeft;
         this.padding.bottom = padBottom;
-        this.padding.height = padHeight;
+        this.padding.right = padReight;
         this.invalidLayout();
     }
 
@@ -89,8 +89,8 @@ class PathComponent extends TwoCompponent{
 class TextComponent extends TwoCompponent{
     constructor(context,shape=null){
         super(context,shape);
-        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
-        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.prefSize.height/2));
+        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y+this.rect.height/2));
+        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.rect.height/2));
         // adjust according to default text align settings
         // TODO: support more text align settings
     }
@@ -107,6 +107,7 @@ class RectComponent extends TwoCompponent{
 
     #width=0;
     #height=0;
+    points;
 
     setSize(width,height){
         this.#width=width;
@@ -132,23 +133,30 @@ class RectComponent extends TwoCompponent{
         return this.#height;
     }
 
-    set shape(v){
-        super.shape=v;
-        if(v){
-            this.#width = v.vertices[1].x*2;
-            this.#height = v.vertices[2].y*2;
-        }
-    }
-
-    get shape(){
-        return super.shape;
-    }
-
-    constructor(context,shape=null){
+    /**
+     * not accept Two.Rectangle
+     * Since Two.Rectangle does not support to change size of width and height
+     * We rewrite most of this functions by using Two.path, to change vertices.
+     * F*ck Two.js
+     * 
+     * @param {Context} context 
+     * @param {Array} points 
+     */
+    constructor(context,points=null){
         super(context,null);
-        this.shape=shape;
-        console.log(shape);
-        console.log(shape.translation);
+        this.points=points;
+        if(!points || ! (points instanceof Array)){
+            this.points = points = [
+                new Two.Vector(0,0),
+                new Two.Vector( this.prefSize.width,0),
+                new Two.Vector( this.prefSize.width, this.prefSize.height),
+                new Two.Vector(0, this.prefSize.height)
+            ];
+        }
+        this.shape = new Two.Path(points,true,false);
+        this.shape.translation.set(0,0);
+        this.context.add(this.shape);
+        
         this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
         this.rect.addPropertyListener("width",(v)=>this.width = v);
@@ -161,17 +169,17 @@ class RectComponent extends TwoCompponent{
         }
         let vs = this.shape.vertices;
                         //x y
-        let v0 = vs[0]; //- -
-        let v1 = vs[1]; //+ -
-        let v2 = vs[2]; //+ +
-        let v3 = vs[3]; //- +
+        let v0 = this.points[0]; //- -
+        let v1 = this.points[1]; //+ -
+        let v2 = this.points[2]; //+ +
+        let v3 = this.points[3]; //- +
 
-        const halfX = this.#width/2;
-        const halfY = this.#height/2;
-        v0.x = -halfX; v0.y = -halfY;
-        v1.x =  halfX; v1.y = -halfY;
-        v2.x =  halfX; v2.y =  halfY;
-        v3.x = -halfX; v3.y =  halfY;
+        const x = this.#width;
+        const y = this.#height;
+        v0.x = 0; v0.y = 0;
+        v1.x = x; v1.y = 0;
+        v2.x = x; v2.y = y;
+        v3.x = 0; v3.y = y;
     }
 
 }
@@ -185,23 +193,23 @@ var TwoComp={
      * @param {number} padTop 
      * @param {number} padLeft 
      * @param {number} padBottom 
-     * @param {number} padHeight 
+     * @param {number} padRight 
      * @returns {TwoCompponent}
      */
-    makeEmptyComponent: function(context,width=0, height=0,padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeEmptyComponent: function(context,width=0, height=0,padTop=0,padLeft=0,padBottom=0,padRight=0){
         let comp = new TwoCompponent(context,null);
         comp.prefSize.width = width;
         comp.prefSize.height = height;
         comp.padding.top = padTop;
         comp.padding.left = padLeft;
         comp.padding.bottom = padBottom;
-        comp.padding.height = padHeight;
+        comp.padding.height = padRight;
         return comp;
     },
 
-    makeComponent: function(context,shape,padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeComponent: function(context,shape,padTop=0,padLeft=0,padBottom=0,padRight=0){
         let comp = new PathComponent(context,shape);
-        this.setupComponent(comp,padTop,padLeft,padBottom,padHeight);
+        this.setupComponent(comp,padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
@@ -216,13 +224,19 @@ var TwoComp={
      * @param {number} padTop 
      * @param {number} padLeft 
      * @param {number} padBottom 
-     * @param {number} padHeight 
+     * @param {number} padRight 
      * @returns {TwoCompponent}
      */
-    makeRectangle: function(context,x, y, width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        let shape = new Two.Rectangle(x, y, width, height);
-        let comp = new RectComponent(context,shape);
-        comp.setPadding(padTop,padLeft,padBottom,padHeight);
+    makeRectangle: function(context,x, y, width, height,padTop=0,padLeft=0,padBottom=0,padRight=0){
+        //let shape = new Two.Rectangle(x, y, width, height);
+        let points = [
+            new Two.Vector(0,0),
+            new Two.Vector( width,0),
+            new Two.Vector( width, height),
+            new Two.Vector(0, height)
+        ];
+        let comp = new RectComponent(context,points);
+        comp.setPadding(padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
@@ -235,30 +249,30 @@ var TwoComp={
      * @param {number} padTop 
      * @param {number} padLeft 
      * @param {number} padBottom 
-     * @param {number} padHeight 
+     * @param {number} padRight 
      * @returns {TwoCompponent}
      */
-    makeRoundedRectangle: function(context,x, y, width, height, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeRoundedRectangle: function(context,x, y, width, height, padTop=0,padLeft=0,padBottom=0,padRight=0){
         let shape = new Two.RoundedRectangle(x, y, width, height);
         let comp = new RectComponent(context,shape);
-        comp.setPadding(padTop,padLeft,padBottom,padHeight);
+        comp.setPadding(padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
-    makeTwoObj:function(context,obj, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeTwoObj:function(context,obj, padTop=0,padLeft=0,padBottom=0,padRight=0){
         let rect = obj.getBoundingClientRect();
-        let comp = this.makeComponent(context,obj,rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
+        let comp = this.makeComponent(context,obj,rect.width,rect.height,padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
-    makeText:function(context,text, style={baseline:"top",alignment:"left"},x=0,y=0, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+    makeText:function(context,text, style={baseline:"top",alignment:"left"},x=0,y=0, padTop=0,padLeft=0,padBottom=0,padRight=0){
         let shape = new Two.Text(text,x,y,style);
         let comp = new TextComponent(context,shape);
-        comp.setPadding(padTop,padLeft,padBottom,padHeight);
+        comp.setPadding(padTop,padLeft,padBottom,padRight);
         return comp;
     },
 
-    makeTextEdit:function(x, y, width, height, padTop=0, padLeft=0, padBottom=0, padHeight=0){
+    makeTextEdit:function(x, y, width, height, padTop=0, padLeft=0, padBottom=0, padRight=0){
         let dom = document.createElement("input");
         //TODO!!!
     }

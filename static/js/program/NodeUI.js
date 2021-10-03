@@ -22,8 +22,9 @@ class NodeUI extends RectComponent{
     portStyle=defaultPortStyle;
 
     constructor(_context, data){
-        super(_context, new Two.Rectangle(0,0,1,1));
+        super(_context, null);
         this.nodeData = data;
+        //this.shape = this.context.makeRectangle(0,0,50,50);
         //TODO: add style change listener
         ValueChangeManager.install(this.uiData.rect);
         this.generateRenderData();
@@ -61,24 +62,25 @@ class NodeUI extends RectComponent{
 
         //title 
         let nodeTitle = TwoComp.makeText(this.context,"Title");
+        nodeTitle.setPadding(8,0,12,0);
         this.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
         
         for(const portKey of Object.keys(this.nodeData.inputPorts)){
-            let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,5,5,5,5);
+            let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,15,5);
             let portText = TwoComp.makeText(this.context,portKey);
-            this.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT});
-            this.addObject(portText,{newline:false,align:FlowLayout.AlignType.LEFT});
+            portText.setPadding(0,0,0,5);
+            this.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
+            this.addObject(portText,{newline:false,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
         }
         
         for(const portKey of Object.keys(this.nodeData.outputPorts)){
-            let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,5,5,5,5);
+            let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,15,5);
             let portText = TwoComp.makeText(this.context,portKey);
-            this.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT});
-            this.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT});
+            portText.setPadding(0,5,0,0);
+            this.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT|FlowLayout.AlignType.TOP});
+            this.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT|FlowLayout.AlignType.TOP});
         }
-
-        console.log(this.layout);
-        console.log(this);
+        
         this.layout.reLayout();
     }
 

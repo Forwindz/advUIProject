@@ -53,7 +53,6 @@ class FlowLayout extends Layout{
             let maxWidth = 0;
             let lineMaxHeight = 0;
             let lastElement=0;
-            let unlimitedWidth = this.constrainSize.width<0;
             for(let i=0;i<this.objs.length;i++){
                 const obj = this.objs[i];
                 const w = obj.prefSize.width+obj.padding.left+obj.padding.right;
@@ -134,8 +133,12 @@ class FlowLayout extends Layout{
                         rect.x = xOffset+obj.padding.left+leftWidth;
                     }
 
+                    
+                    obj.rect.height = obj.prefSize.height;
+                    obj.rect.width = obj.prefSize.width;
                     obj.rect.x=rect.x;
                     obj.rect.y=rect.y;
+                    
                     xOffset+=w+obj.padding.left+obj.padding.right;
                 }
                 yOffset+=line.height;

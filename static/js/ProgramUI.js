@@ -10,6 +10,7 @@ function defineOneNode(){
     node.addInputPort("Input2","float");
     node.addOutputPort("Out1","float");
     node.addOutputPort("Output2","int");
+    node.addOutputPort("Output3---","vert");
     return node;
 }
 export function mainProgramming() {
@@ -40,6 +41,8 @@ export function mainProgramming() {
     nodeGroupUI.addNode(node1,100,200);
     let node2 = defineOneNode();
     nodeGroupUI.addNode(node2,200,233);
+    let node3 = defineOneNode();
+    nodeGroupUI.addNode(node3,210,400);
 
     console.log(nodeGroupUI);
     context.update();

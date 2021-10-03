@@ -8,7 +8,8 @@ class NodeGroupUI extends RectComponent{
     #nodeUIs=[]; // a dictionary to store node UI Component
     data=null;
     constructor(_context, data){
-        super(_context, new Two.Rectangle(5,5,1500,1000));
+        super(_context, null);
+        //this.shape = this.context.makeRectangle(0,0,1000,1500);
         data.eventAddNode.add((source,params)=>this.addNodeUI(params));
         this.data=data;
         //data.eventConnectNode.add((source,params)=>this.#onAddNode(source,params));
