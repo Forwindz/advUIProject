@@ -12,6 +12,11 @@ class TwoCompponent extends LayoutComponent{
     constructor(shape=null){
         super();
         this.shape=shape;
+        /*
+        if(!shape){
+            this.#createGroup();
+            this.shape=this.#shapeGroup;
+        }*/
     }
 
     set shape(v){
@@ -43,7 +48,7 @@ class TwoCompponent extends LayoutComponent{
     addObject(obj,constrain=null){
         super.addObject(obj,constrain);
         if(!this.#shapeGroup){
-            this.#shapeGroup = twoCompContext.makeGroup();
+            this.#createGroup();
         }
         this.#shapeGroup.add(obj.shape);
     }
@@ -55,7 +60,47 @@ class TwoCompponent extends LayoutComponent{
         }
     }
 
+    #createGroup(){
+        this.#shapeGroup = twoCompContext.makeGroup();
+        this.rect.addPropertyListener("x",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
+        this.rect.addPropertyListener("y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
+    }
+
+    setPadding(padTop=0,padLeft=0,padBottom=0,padHeight=0){
+        this.padding.top = padTop;
+        this.padding.left = padLeft;
+        this.padding.bottom = padBottom;
+        this.padding.height = padHeight;
+    }
+
 }
+
+class PathComponent extends TwoCompponent{
+    constructor(shape){
+        super(shape);
+        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
+        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
+    }
+}
+
+class TextComponent extends TwoCompponent{
+    constructor(shape){
+        super(shape);
+        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
+        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.prefSize.height/2));
+    }
+}
+
+class RectComponent extends TwoCompponent{
+    constructor(shape){
+        super(shape);
+        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
+        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
+        this.rect.addPropertyListener("width",(v)=>this.shape.width = v);
+        this.rect.addPropertyListener("height",(v)=>this.shape.height = v);
+    }
+}
+
 
 var TwoComp={
 
@@ -81,17 +126,15 @@ var TwoComp={
     },
 
     makeComponent: function(shape,width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        let comp = new TwoCompponent(shape);
+        let comp = new PathComponent(shape);
+        this.setupComponent(comp,width, height,padTop,padLeft,padBottom,padHeight);
+        return comp;
+    },
+
+    setupComponent: function(comp,width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
         comp.rect.width = comp.prefSize.width = width;
         comp.rect.height = comp.prefSize.height = height;
-        comp.padding.top = padTop;
-        comp.padding.left = padLeft;
-        comp.padding.bottom = padBottom;
-        comp.padding.height = padHeight;
-        //bind data
-        comp.rect.addPropertyListener("x",(x)=>shape.translation.set(x,shape.translation.y));
-        comp.rect.addPropertyListener("y",(y)=>shape.translation.set(shape.translation.x,y));
-        return comp;
+        comp.setPadding(padTop,padLeft,padBottom,padHeight);
     },
 
     //TODO: add listeners to prefSize; (maybe I will not use this)
@@ -111,7 +154,8 @@ var TwoComp={
     makeRectangle: function(x, y, width, height,padTop=0,padLeft=0,padBottom=0,padHeight=0){
         //let shape = twoCompContext.makeRectangle(x, y, width, height);
         let shape = new Two.Rectangle(x, y, width, height);
-        let comp = this.makeComponent(shape,width,height,padTop,padLeft,padBottom,padHeight);
+        let comp = new RectComponent(shape);
+        this.setupComponent(comp,width,height,padTop,padLeft,padBottom,padHeight);
         return comp;
     },
 
@@ -130,7 +174,8 @@ var TwoComp={
     makeRoundedRectangle: function(x, y, width, height, padTop=0,padLeft=0,padBottom=0,padHeight=0){
         //let shape = twoCompContext.makeRectangle(x, y, width, height);
         let shape = new Two.RoundedRectangle(x, y, width, height);
-        let comp = this.makeComponent(shape,width,height,padTop,padLeft,padBottom,padHeight);
+        let comp = new RectComponent(shape);
+        this.setupComponent(comp,width,height,padTop,padLeft,padBottom,padHeight);
         return comp;
     },
 
@@ -140,19 +185,11 @@ var TwoComp={
         return comp;
     },
 
-    makeText:function(text, style={baseline:"top",alignment:"left"}, padTop=0,padLeft=0,padBottom=0,padHeight=0){
-        //let obj = twoCompContext.makeText(text,0,0,style);
-        let obj = new Two.Text(text,0,0,style);
-        let rect = obj.getBoundingClientRect();
-        console.log(rect);
-        let comp = this.makeEmptyComponent(rect.width,rect.height,padTop,padLeft,padBottom,padHeight);
-        comp.shape = obj;
-        //TODO: add listener according alignment, currently we use default valuea
-        //comp.rect.addPropertyListener("x",(x)=>obj.translation.set(x+comp.prefSize.width/2,obj.translation.y));
-        comp.rect.addPropertyListener("x",(x)=>obj.translation.set(x,obj.translation.y));
-        comp.rect.addPropertyListener("y",(y)=>obj.translation.set(obj.translation.x,y+comp.prefSize.height/2));
-        twoCompContext.bindOnce("afterUpdate",()=>{comp.shapeDom.style.cursor= "default"});
-        //comp.shapeDom.style.cursor = "default";
+    makeText:function(text, style={baseline:"top",alignment:"left"},x=0,y=0, padTop=0,padLeft=0,padBottom=0,padHeight=0){
+        let shape = new Two.Text(text,x,y,style);
+        let comp = new TextComponent(shape);
+        let r = shape.getBoundingClientRect();
+        this.setupComponent(comp,r.width,r.height,padTop,padLeft,padBottom,padHeight);
         return comp;
     },
 /*

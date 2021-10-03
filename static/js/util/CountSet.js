@@ -9,18 +9,18 @@ class CountSet{
 
     }
 
-    add(v){
+    add(v,data_){
         if (this.exist(v)){
-            this.#dic[v]++;
+            this.#dic[v].count++;
         }else{
-            this.#dic=1;
+            this.#dic={count:1,data:data_};
         }
     }
 
     remove(v){
         if (this.exist(v)){
-            this.#dic[v]--;
-            if(this.#dic[v]==0){
+            this.#dic[v].count--;
+            if(this.#dic[v].count==0){
                 delete this.#dic[v];
             }
         }
@@ -32,7 +32,7 @@ class CountSet{
 
     getTimes(v){
         if(this.exist(v)){
-            return this.#dic[v];
+            return this.#dic[v].count;
         }else{
             return 0;
         }

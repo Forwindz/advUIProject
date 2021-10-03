@@ -37,9 +37,11 @@ export function mainProgramming() {
     let a = new Define.NodeGraph();
     let node1 = defineOneNode();
     a.addNode(node1);
-    let nodeUI = new NodeUIControl(context);
-    nodeUI.rawData=node1;
+    let nodeUI = new NodeUIControl(context, node1);
+    nodeUI.uiData.rect.x = 100;
+    nodeUI.uiData.rect.y = 50;
+
+    nodeUI.uiData.rect.y = 150;
     console.log(nodeUI);
-    nodeUI.generateRenderData();
     context.update();
 }

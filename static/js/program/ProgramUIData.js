@@ -12,8 +12,9 @@ class UIBasic{
     rawData=null; //data model
     uiContext=null;
     layout=null;
-    constructor(_context){
+    constructor(_context,data){
         this.uiContext = _context;
+        this.rawData=data;
     }
 
     generateRenderData(){
@@ -47,6 +48,10 @@ class NodeUIStyle{
 var defaultPortStyle = new PortUIStyle();
 var defaultNodeStyle = new NodeUIStyle();
 
+
+class NodeUIData{
+    rect={x:0,y:0};
+}
 /**
  * This class generate rendering data for views
  * Also control interactions
@@ -55,20 +60,28 @@ var defaultNodeStyle = new NodeUIStyle();
  * Therefore, this class is mainly designed for install rendering elements and interactions
  */
 class NodeUIControl extends UIBasic{
-    constructor(_context){
-        super(_context);
-        //TODO: add style change listener
-    }
+    
 
-    #x=0;
-    #y=0;
-    #w=0;
-    #h=0;
+    uiData = new NodeUIData();
     
     nodeStyle=defaultNodeStyle;
     portStyle=defaultPortStyle;
 
     nodePanelUI;
+
+    constructor(_context, data){
+        super(_context, data);
+        //TODO: add style change listener
+        ValueChangeManager.install(this.uiData.rect);
+        this.generateRenderData();
+        //bind data
+        this.uiData.rect.addAllPropertiesListener(
+            (v)=>{
+                this.nodePanelUI.rect.x=this.uiData.rect.x;
+                this.nodePanelUI.rect.y=this.uiData.rect.y;
+            }
+            );
+    }
     /**
      * How to draw:
      *      _____________
@@ -85,21 +98,22 @@ class NodeUIControl extends UIBasic{
      */
     generateRenderData(){
         if (!this.nodeStyle){
-
+            //TODO: setup styles
         }
         this.#generateUI();
-        
-
     }
 
     #generateUI(){
         const two = this.uiContext;
         TwoComp.setContext(two);
-        let nodePanelComp = TwoComp.makeEmptyComponent();
+        let nodePanelComp = TwoComp.makeRectangle(0,0,1,1);
         let layout = new FlowLayout();
         nodePanelComp.layout=layout;
 
-        console.log("gen UI");
+        //rect panel
+        let rectPanel = TwoComp.makeRectangle(0,0,0,0);
+
+        //title 
         let nodeTitle = TwoComp.makeText("Title");
         nodePanelComp.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
         
@@ -116,12 +130,10 @@ class NodeUIControl extends UIBasic{
             nodePanelComp.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT});
             nodePanelComp.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT});
         }
-        console.log(nodePanelComp);
-        console.log(layout);
-
         layout.reLayout();
 
         this.nodePanelUI = nodePanelComp;
+        console.log(this.nodePanelUI);
     }
 
 }

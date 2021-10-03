@@ -34,10 +34,12 @@ class NodeConnectInfo{
     }
 };
 /**
+ * Node class, describe a node
+ * 
  * We do not use templates here,
  * Because dynamic changes of nodes are really common in such programming systems.
  * For example, the node might change, when we deliver different types of data to the node
- * Therefore, we put every thing together
+ * Therefore, we put everything together
  *      at a cost of memory and running efficiency
  *      for the flexiblity and Scalability
  * 
@@ -47,6 +49,8 @@ class Node{
     name="Node";
     inputPorts={};
     outputPorts={};
+    // for node graph, to identify the node
+    index=0;
 
     constructor(){
         this.defineNode();
@@ -93,24 +97,24 @@ class Node{
     }
 
 
-    index=0;
+    // redundant data for analysis
     forwardNodes=new CountSet();
     backwardNodes=new CountSet();
 
     addConnection(connectInfo){
         if(connectInfo.inputNode==this){
-            this.backwardNodes.add(connectInfo.outputNode);
+            this.backwardNodes.add(connectInfo.outputNode.id,connectInfo.outputNode);
         }else{
-            this.forwardNodes.add(connectInfo.inputNode);
+            this.forwardNodes.add(connectInfo.inputNode.id,connectInfo.inputNode);
         }
         this.#onConnect(connectInfo);
     }
 
     removeConnection(connectInfo){
         if(connectInfo.inputNode==this){
-            this.backwardNodes.remove(connectInfo.outputNode);
+            this.backwardNodes.remove(connectInfo.outputNode.id,connectInfo.outputNode);
         }else{
-            this.forwardNodes.remove(connectInfo.inputNode);
+            this.forwardNodes.remove(connectInfo.inputNode.id,connectInfo.inputNode);
         }
         this.#onDisconnect(connectInfo);
     }
