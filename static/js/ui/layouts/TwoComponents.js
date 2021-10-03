@@ -1,5 +1,6 @@
 import Two from "../../lib/two.js"
 import LayoutComponent from "./LayoutComponent.js";
+import AttrManager from "../../util/ValueChangeManager.js"
 class TwoCompponent extends LayoutComponent{
     
     #shape; // Two.js objects
@@ -17,12 +18,19 @@ class TwoCompponent extends LayoutComponent{
 
     set shape(v){
         if(v){
+            if(this.#shape && this.#shapeGroup){
+                this.#shapeGroup.remove(this.#shape);
+            }
             this.#shape=v;
             this.#context.bindOnce("afterUpdate",()=>this.updateDom());
 
             let r = this.#shape.getBoundingClientRect();
             this.prefSize.width = r.width;
             this.prefSize.height = r.height;
+
+            if(this.#shape && this.#shapeGroup){
+                this.#shapeGroup.add(this.#shape);
+            }
 
         }else{
             this.#shape=null;
@@ -54,7 +62,11 @@ class TwoCompponent extends LayoutComponent{
         if(!this.#shapeGroup){
             this.#createGroup();
         }
-        this.#shapeGroup.add(obj.shape);
+        if(obj.#shapeGroup){
+            this.#shapeGroup.add(obj.#shapeGroup);
+        }else{
+            this.#shapeGroup.add(obj.shape);
+        }
     }
 
     removeObject(obj){
@@ -66,10 +78,14 @@ class TwoCompponent extends LayoutComponent{
 
     #createGroup(){
         this.#shapeGroup = this.#context.makeGroup();
-        this.rect.addPropertyListener("x",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
-        this.rect.addPropertyListener("y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
-        console.log("Create group! > "+this.#shapeGroup.id);
-        console.log(this);
+        if(this.#shape){
+            this.#shapeGroup.add(this.#shape);
+            this.#shape.translation.set(0,0);
+            AttrManager.removePropertyAllListener(this.rect,"x"); // reomve default listener installed by rectangle
+            AttrManager.removePropertyAllListener(this.rect,"y");
+        }
+        AttrManager.addPropertyListener(this.rect, "x",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
+        AttrManager.addPropertyListener(this.rect, "y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
     }
 
     setPadding(padTop=0,padLeft=0,padBottom=0,padReight=0){
@@ -89,21 +105,22 @@ class TwoCompponent extends LayoutComponent{
         }
     }
 
+
 }
 
 class PathComponent extends TwoCompponent{
     constructor(context,shape=null){
         super(context,shape);
-        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
-        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
+        AttrManager.addPropertyListener(this.rect, "x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
+        AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
     }
 }
 
 class TextComponent extends TwoCompponent{
     constructor(context,shape=null){
         super(context,shape);
-        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y+this.rect.height/2));
-        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.rect.height/2));
+        AttrManager.addPropertyListener(this.rect, "x",(x)=>this.shape.translation.set(x,this.shape.translation.y+this.rect.height/2));
+        AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.rect.height/2));
         // adjust according to default text align settings
         // TODO: support more text align settings
     }
@@ -170,10 +187,10 @@ class RectComponent extends TwoCompponent{
         this.shape.translation.set(0,0);
         //this.context.add(this.shape);
         
-        this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
-        this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
-        this.rect.addPropertyListener("width",(v)=>this.width = v);
-        this.rect.addPropertyListener("height",(v)=>this.height = v);
+        AttrManager.addPropertyListener(this.rect,"x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
+        AttrManager.addPropertyListener(this.rect,"y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
+        AttrManager.addPropertyListener(this.rect,"width",(v)=>this.width = v);
+        AttrManager.addPropertyListener(this.rect,"height",(v)=>this.height = v);
     }
 
     updateRectSize(){

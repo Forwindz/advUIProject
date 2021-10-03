@@ -1,4 +1,4 @@
-import ValueChangeManager from "../../util/ValueChangeManager.js";
+import AttrManager from "../../util/ValueChangeManager.js"
 
 /**
  * Component for layouts,
@@ -12,12 +12,8 @@ class LayoutComponent{
     constrain;
 
     constructor(){
-        ValueChangeManager.install(this.rect);
-        ValueChangeManager.install(this.padding);
-        ValueChangeManager.install(this.prefSize);
-        //this.rect.addAllPropertiesListener((v)=> this.invalidLayout());
-        this.padding.addAllPropertiesListener((v)=> this.invalidLayout());
-        this.prefSize.addAllPropertiesListener((v)=> this.invalidLayout());
+        AttrManager.addAllPropertiesListener(this.padding,(v)=> this.invalidLayout());
+        AttrManager.addAllPropertiesListener(this.prefSize,(v)=> this.invalidLayout());
     }
 
     #father = null;

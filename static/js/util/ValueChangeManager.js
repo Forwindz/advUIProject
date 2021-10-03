@@ -1,11 +1,11 @@
 
-class ValueChangeManager{
+class AttrManager{
     static install(obj){
-        obj.addPropertyListener = ValueChangeManager.prototype.addPropertyListener;
-        obj.addPropertiesListener = ValueChangeManager.prototype.addPropertiesListener;
-        obj.addAllPropertiesListener = ValueChangeManager.prototype.addAllPropertiesListener;
+        obj.addPropertyListener = AttrManager.prototype.addPropertyListener;
+        obj.addPropertiesListener = AttrManager.prototype.addPropertiesListener;
+        obj.addAllPropertiesListener = AttrManager.prototype.addAllPropertiesListener;
+        obj.removePropertyAllListener = AttrManager.prototype.addAllPropertiesListener;
     }
-
     /**
      * Add a listener to the property
      * This will create a property with `${name}`
@@ -15,11 +15,11 @@ class ValueChangeManager{
      * @param {string} name 
      * @param {function} listener 
      */
-    addPropertyListener(name, listener){
-        const _this = this;
+    static addPropertyListener(obj, name, listener){
+        const _this = obj;
         let funcName = `_f_${name}`;
         let innerName = `_${name}`;
-        if (funcName in _this){
+        if (funcName in _this && _this[funcName]){
             if (_this[funcName] instanceof Array){ // third time or more
                 _this[funcName].push(listener);
             }else{ // second time to define, we create an array to store listeners
@@ -37,7 +37,9 @@ class ValueChangeManager{
                     }
                 });
             }
-        }else{
+            return;
+        }else
+        {
             // first time to define, just assign a function 
             _this[funcName] = listener;
             _this[innerName] = _this[name];
@@ -47,27 +49,44 @@ class ValueChangeManager{
                 },
                 set: function(newValue) {
                     _this[innerName] = newValue;
-                    _this[funcName](newValue);
+                    if(_this[funcName]){
+                        _this[funcName](newValue);
+                    }
+                    
                 }
             });
         }
         
     }
 
-    addPropertiesListener(names, listener){
+    static addPropertiesListener(obj,names, listener){
         for(const name of names){
-            this.addPropertyListener(name,listener);
+            this.addPropertyListener(obj,name,listener);
         }
     }
-    addAllPropertiesListener(listener){
+    static addAllPropertiesListener(obj,listener){
         for(const name in this){
             if(typeof this[name] == "function" || name[0]=='_'){
                 continue;
             }
-            this.addPropertyListener(name,listener);
+            this.addPropertyListener(obj,name,listener);
+        }
+    }
+
+    static removePropertyAllListener(obj,name){
+        const _this = obj;
+        let funcName = `_f_${name}`;
+        let innerName = `_${name}`;
+        if(funcName in _this){
+            let funcVar = _this[funcName];
+            if(funcVar instanceof Array){
+                funcVar = new Array();
+            }else{
+                _this[funcName] = null;
+            }
         }
     }
 }
 
 
-export default ValueChangeManager;
+export default AttrManager;

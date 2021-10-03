@@ -2,6 +2,7 @@ import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior} from "..
 import TwoComp from "../ui/layouts/TwoComponents.js"
 import {RectComponent} from "../ui/layouts/TwoComponents.js"
 import {NodeUI} from "./NodeUI.js"
+import AttrManager from "../util/ValueChangeManager.js"
 
 class NodeGroupUI extends RectComponent{
     
@@ -10,11 +11,8 @@ class NodeGroupUI extends RectComponent{
     constructor(_context, data){
         super(_context, null);
         this.initGroup();
-        //this.shape = this.context.makeRectangle(0,0,1000,1500);
         data.eventAddNode.add((source,params)=>this.addNodeUI(params));
         this.data=data;
-        //data.eventConnectNode.add((source,params)=>this.#onAddNode(source,params));
-        //data.eventRemoveNode.add((source,params)=>this.#onRemoveNode(source,params));
         this.#generateUI();
     }
 

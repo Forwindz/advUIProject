@@ -1,5 +1,5 @@
 import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior} from "../data/ProgramDefine.js";
-import ValueChangeManager from "../util/ValueChangeManager.js";
+import AttrManager from "../util/ValueChangeManager.js"
 import TwoComp from "../ui/layouts/TwoComponents.js";
 import {RectComponent} from "../ui/layouts/TwoComponents.js";
 import FlowLayout from "../ui/layouts/FlowLayout.js";
@@ -25,12 +25,9 @@ class NodeUI extends RectComponent{
         super(_context, null);
         this.initGroup();
         this.nodeData = data;
-        //this.shape = this.context.makeRectangle(0,0,50,50);
-        //TODO: add style change listener
-        ValueChangeManager.install(this.uiData.rect);
         this.generateRenderData();
         //bind data
-        this.uiData.rect.addAllPropertiesListener(
+        AttrManager.addAllPropertiesListener(this.uiData.rect,
             (v)=>{
                 this.rect.x=this.uiData.rect.x;
                 this.rect.y=this.uiData.rect.y;
