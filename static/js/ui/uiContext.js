@@ -3,6 +3,7 @@ import Two from "../lib/two.js"
 /**
  * Add bindings that will be executed only once,
  * useful when we update doms and need to do some new operations.
+ * 
  */
 class Context extends Two{
 
@@ -34,6 +35,28 @@ class Context extends Two{
         this.#callOnce("afterUpdate");
     }
 
+
+    //abandoned
+    // do not use these functions
+    /*
+    #layers = []
+
+    #initLayer(count){
+        for(let i=this.#layers.length;i<count;i++){
+            this.#layers.push(this.makeGroup());
+        }
+    }
+    add(shape, layer = null){
+        if(layer==null){
+            super.add(shape);
+        }else{
+            if(this.#layers.length<=layer){
+                this.#initLayer(layer+1);
+            }
+            this.#layers[layer].add(shape);
+        }
+    }
+*/
 }
 
 export function buildContext(insertElement,twoParams){

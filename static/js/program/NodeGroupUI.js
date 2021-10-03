@@ -9,6 +9,7 @@ class NodeGroupUI extends RectComponent{
     data=null;
     constructor(_context, data){
         super(_context, null);
+        this.initGroup();
         //this.shape = this.context.makeRectangle(0,0,1000,1500);
         data.eventAddNode.add((source,params)=>this.addNodeUI(params));
         this.data=data;

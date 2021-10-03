@@ -23,6 +23,7 @@ class NodeUI extends RectComponent{
 
     constructor(_context, data){
         super(_context, null);
+        this.initGroup();
         this.nodeData = data;
         //this.shape = this.context.makeRectangle(0,0,50,50);
         //TODO: add style change listener

@@ -2,10 +2,12 @@ import Two from "../../lib/two.js"
 import LayoutComponent from "./LayoutComponent.js";
 class TwoCompponent extends LayoutComponent{
     
-    #shape;
-    #shapeDom;
-    #shapeGroup = null;
-    #context;
+    #shape; // Two.js objects
+    #shapeDom; // reference to HTML DOM, avaliable ONLY after context updates
+    #shapeGroup = null; // create when we need
+    #context; // Graphic Context (or canvas, if you think it is proper)
+
+    //#layer = 0; 
 
     constructor(context,shape=null){
         super();
@@ -66,6 +68,8 @@ class TwoCompponent extends LayoutComponent{
         this.#shapeGroup = this.#context.makeGroup();
         this.rect.addPropertyListener("x",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
         this.rect.addPropertyListener("y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
+        console.log("Create group! > "+this.#shapeGroup.id);
+        console.log(this);
     }
 
     setPadding(padTop=0,padLeft=0,padBottom=0,padReight=0){
@@ -74,6 +78,15 @@ class TwoCompponent extends LayoutComponent{
         this.padding.bottom = padBottom;
         this.padding.right = padReight;
         this.invalidLayout();
+    }
+
+    /**
+     * Init group first, otherwise we might encounter sequence issues for sub components :(
+     */
+    initGroup(){
+        if(!this.#shapeGroup){
+            this.#createGroup();
+        }
     }
 
 }
@@ -155,7 +168,7 @@ class RectComponent extends TwoCompponent{
         }
         this.shape = new Two.Path(points,true,false);
         this.shape.translation.set(0,0);
-        this.context.add(this.shape);
+        //this.context.add(this.shape);
         
         this.rect.addPropertyListener("x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         this.rect.addPropertyListener("y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
