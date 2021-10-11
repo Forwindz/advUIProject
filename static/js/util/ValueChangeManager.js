@@ -61,15 +61,15 @@ class AttrManager{
 
     static addPropertiesListener(obj,names, listener){
         for(const name of names){
-            this.addPropertyListener(obj,name,listener);
+            obj.addPropertyListener(obj,name,listener);
         }
     }
     static addAllPropertiesListener(obj,listener){
-        for(const name in this){
-            if(typeof this[name] == "function" || name[0]=='_'){
+        for(const name in obj){
+            if(typeof obj[name] == "function" || name[0]=='_'){
                 continue;
             }
-            this.addPropertyListener(obj,name,listener);
+            AttrManager.addPropertyListener(obj,name,listener);
         }
     }
 

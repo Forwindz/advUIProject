@@ -6,13 +6,12 @@ class TwoCompponent extends LayoutComponent{
     #shape; // Two.js objects
     #shapeDom; // reference to HTML DOM, avaliable ONLY after context updates
     #shapeGroup = null; // create when we need
-    #context; // Graphic Context (or canvas, if you think it is proper)
-
+    context; // Graphic Context (or canvas, if you think it is proper)
     //#layer = 0; 
 
     constructor(context,shape=null){
         super();
-        this.#context=context;
+        this.context=context;
         this.shape=shape;
     }
 
@@ -22,7 +21,7 @@ class TwoCompponent extends LayoutComponent{
                 this.#shapeGroup.remove(this.#shape);
             }
             this.#shape=v;
-            this.#context.bindOnce("afterUpdate",()=>this.updateDom());
+            this.context.bindOnce("afterUpdate",()=>this.updateDom());
 
             let r = this.#shape.getBoundingClientRect();
             this.prefSize.width = r.width;
@@ -48,13 +47,17 @@ class TwoCompponent extends LayoutComponent{
     }
 
     get context(){
-        return this.#context;
+        return this.context;
     }
 
     updateDom(){
         if(this.#shape){
             this.#shapeDom = document.getElementById(this.#shape.id);
         }
+    }
+
+    doAfterUpdateDom(func,params=null){
+        this.context.bindOnce("afterUpdate",()=>func(params));
     }
 
     addObject(obj,constrain=null){
@@ -77,7 +80,7 @@ class TwoCompponent extends LayoutComponent{
     }
 
     #createGroup(){
-        this.#shapeGroup = this.#context.makeGroup();
+        this.#shapeGroup = this.context.makeGroup();
         if(this.#shape){
             this.#shapeGroup.add(this.#shape);
             this.#shape.translation.set(0,0);
@@ -105,6 +108,13 @@ class TwoCompponent extends LayoutComponent{
         }
     }
 
+    get id(){
+        if(this.#shapeGroup){
+            return this.#shapeGroup.id;
+        }else{
+            return this.#shape.id;
+        }
+    }
 
 }
 

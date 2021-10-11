@@ -3,6 +3,9 @@ import TwoComp from "../ui/layouts/TwoComponents.js"
 import {RectComponent} from "../ui/layouts/TwoComponents.js"
 import {NodeUI} from "./NodeUI.js"
 import AttrManager from "../util/ValueChangeManager.js"
+import StateMachine from "javascript-state-machine";
+import {dragStateMachine} from "../util/utils.js"
+//https://github.com/jakesgordon/javascript-state-machine
 
 class NodeGroupUI extends RectComponent{
     
@@ -23,7 +26,7 @@ class NodeGroupUI extends RectComponent{
 
     addNode(node,x=0,y=0){
         this.data.addNode(node);
-        const posInfo = this.#nodeUIs[node.index].rect;
+        let posInfo = this.#nodeUIs[node.index].uiData.rect;
         posInfo.x =x;
         posInfo.y=y;
     }
@@ -36,6 +39,41 @@ class NodeGroupUI extends RectComponent{
         nodeUI.uiData.rect.x=x;
         nodeUI.uiData.rect.y=y;
         this.addObject(nodeUI);
+    }
+
+    /**
+     * install interactions
+     * Basic Interaction: (Left Mouse)
+     *      Drag
+     *      multi-Selection
+     *      
+     * For the whole panel:
+     *      Drag
+     *      deselect
+     *      scale
+     * 
+     * @param {NodeUI} nodeUI 
+     */
+    installInteraction(nodeUI){
+        let fsm = new StateMachine({
+            init:'idle',
+            transitions:[
+                {name:"leftMouseDownItem",from:'idle',to:'selected'},
+                {name:"leftMouseMove",from:'selected',to:'drag'},
+                {name:"leftMouseUp",from:'drag',to:'selected'},
+                {name:"cancelSelect",from:'selected',to:'idle'}
+            ]
+        });
+        fsm.observe({
+            onidle:function(){},
+            onleftDown:function(){},
+            ondrag:function(){}
+        }
+        );
+    }
+
+    processLeftMouseDown(){
+        
     }
 }
 
