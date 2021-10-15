@@ -7,6 +7,7 @@ import {PortUIStyle,NodeUIStyle,defaultNodeStyle,defaultPortStyle} from "./Style
 import {NodeUIData} from "./ProgramUIData.js";
 import StateMachine from "javascript-state-machine";
 import {DragInteraction} from "../interaction/Drag.js"
+import PortUI from "./PortUI.js"
 /**
  * This class generate rendering data for views
  * Also control interactions
@@ -19,6 +20,8 @@ class NodeUI extends RectComponent{
 
     uiData = new NodeUIData();
     nodeData;
+    inputPortUIs=[];
+    outputPortUIs=[];
     
     nodeStyle=defaultNodeStyle;
     portStyle=defaultPortStyle;
@@ -44,7 +47,6 @@ class NodeUI extends RectComponent{
             if(!this.shapeDom){
                 return;
             }
-            console.log(this.uiData.rect);
             this.dragInteraction.install(this.shapeDom,this.uiData.rect);
         });
         console.log(this);
@@ -86,6 +88,11 @@ class NodeUI extends RectComponent{
             this.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
             this.addObject(portText,{newline:false,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
             this.#portShape.push(portIcon);
+
+            let pui = new PortUI(this.nodeData.inputPorts[portKey]);
+            pui.portTextUI = portText;
+            pui.portIconUI = portIcon;
+            this.inputPortUIs.push(pui);
         }
         
         for(const portKey of Object.keys(this.nodeData.outputPorts)){
@@ -95,12 +102,17 @@ class NodeUI extends RectComponent{
             this.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT|FlowLayout.AlignType.TOP});
             this.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT|FlowLayout.AlignType.TOP});
             this.#portShape.push(portIcon);
+
+            let pui = new PortUI(this.nodeData.outputPorts[portKey]);
+            pui.portTextUI = portText;
+            pui.portIconUI = portIcon;
+            this.outputPortUIs.push(pui);
         }
         
         this.layout.reLayout();
     }
 
-    getPort(){
+    getPorts(){
         return this.#portShape;
     }
 

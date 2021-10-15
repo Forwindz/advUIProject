@@ -8,7 +8,7 @@ class LayoutComponent{
     rect = {x:0,y:0,width:0,height:0};//stored position info
     padding = {top:0,left:0,bottom:0,right:0};
     prefSize = {width:0,height:0};//preferred size, use by default
-    #objs= new Array();
+    objs= new Array();
     constrain;
 
     constructor(){
@@ -34,11 +34,11 @@ class LayoutComponent{
         // invalid layouts
         if(oldFather){
             oldFather.invalidLayout();
-            removeArrayValue(oldFather.#objs,this);
+            removeArrayValue(oldFather.objs,this);
         }
         if(this.#father){
             this.#father.invalidLayout();
-            this.#father.#objs.push(this);
+            this.#father.objs.push(this);
         }
     }
 
@@ -48,7 +48,7 @@ class LayoutComponent{
     set layout(v){
         let oldLayout = this.#layout;
         this.#layout=v;
-        this.#layout.objs=this.#objs;
+        this.#layout.objs=this.objs;
         this.#layout.curObj=this;
         this.invalidLayout();
         if(oldLayout){

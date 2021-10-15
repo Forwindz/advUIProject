@@ -146,7 +146,7 @@ class Port{
     }
 
     addConnection(_connection){
-        connectInfo.push(_connection);
+        this.connectInfo.push(_connection);
     }
 
     removeConnection(_connection){
@@ -224,15 +224,15 @@ class OutputPort extends Port{
         if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
             return null;
         }
-        if(!DefinitionManager.isCompatType(_inputPort.typeName,_outputPort.typeName)){
+        if(!DefinitionManager.getInstance().isCompatType(_inputPort.typeName,_outputPort.typeName)){
             return null;
         }
-        connectionInfo = new NodeConnectInfo(_inputPort,_inputNode,_outputPort,_outputNode);
+        let connectInfo = new NodeConnectInfo(_inputPort,_inputNode,_outputPort,_outputNode);
         _inputNode.addConnection(connectInfo);
         _outputNode.addConnection(connectInfo);
         _inputPort.addConnection(connectInfo);
         _outputPort.addConnection(connectInfo);
-        this.eventConnectNode.notify(this,connectionInfo);
+        this.eventConnectNode.notify(this,connectInfo);
         return connectInfo;
     }
 
@@ -241,7 +241,7 @@ class OutputPort extends Port{
         if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
             return false;
         }
-        if(!DefinitionManager.isCompatType(_inputPort.typeName,_outputPort.typeName)){
+        if(!DefinitionManager.getInstance().isCompatType(_inputPort.typeName,_outputPort.typeName)){
             return false;
         }
         return true;
@@ -264,10 +264,10 @@ class OutputPort extends Port{
      * @returns {NodeConnectInfo} 
      */
     addConnectionRaw(_inputPortName,_inputNodeIndex,_outputPortName,_outputNodeIndex){
-        _inputNode = this.nodes[_inputNodeIndex];
-        _outputNode = this.nodes[_outputNodeIndex];
-        _inputPort = _inputNode.inputPorts[_inputPortName];
-        _outputPort = _outputNode.outputPorts[_outputPortName];
+        let _inputNode = this.nodes[_inputNodeIndex];
+        let _outputNode = this.nodes[_outputNodeIndex];
+        let _inputPort = _inputNode.inputPorts[_inputPortName];
+        let _outputPort = _outputNode.outputPorts[_outputPortName];
         return this.addConnection(_inputPort,_inputNode,_outputPort,_outputNode);
     }
 
@@ -308,11 +308,13 @@ class DefinitionManager{
      * @returns {boolean}
      */
     isCompatType(inputTypeName, acceptTypeName){
+        return true;
+        /*
         if(acceptTypeName==null){
             return true;
         }
         acceptType = this.typeID[acceptTypeName].acceptType;
-        return acceptType.include(inputTypeName);
+        return acceptType.include(inputTypeName);*/
     }
 };
 

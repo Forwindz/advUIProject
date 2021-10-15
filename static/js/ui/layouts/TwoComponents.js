@@ -1,12 +1,15 @@
 import Two from "../../lib/two.js"
 import LayoutComponent from "./LayoutComponent.js";
 import AttrManager from "../../util/ValueChangeManager.js"
+import EventPublisher from "../../util/Events.js";
 class TwoCompponent extends LayoutComponent{
     
     #shape; // Two.js objects
     #shapeDom; // reference to HTML DOM, avaliable ONLY after context updates
     #shapeGroup = null; // create when we need
     context; // Graphic Context (or canvas, if you think it is proper)
+    #validDom=false; //check if update HTML DOM should be updated
+    #afterDomUpdateEvent = new EventPublisher(); //this only invoke once, and reset after each event
     //#layer = 0; 
 
     constructor(context,shape=null){
@@ -22,6 +25,7 @@ class TwoCompponent extends LayoutComponent{
             }
             this.#shape=v;
             this.context.bindOnce("afterUpdate",()=>this.updateDom());
+            this.#validDom=false;
 
             let r = this.#shape.getBoundingClientRect();
             this.prefSize.width = r.width;
@@ -51,13 +55,27 @@ class TwoCompponent extends LayoutComponent{
     }
 
     updateDom(){
-        if(this.#shape){
+        if(this.#shape && !this.#validDom){
+            for(const i of this.objs){ //ensure child objects are updated
+                i.updateDom();
+            }
+
             this.#shapeDom = document.getElementById(this.#shape.id);
+            this.#validDom = this.#shapeDom!=null;
+            if(this.#validDom){
+                this.#afterDomUpdateEvent.notify(this,this.shapeDom);
+                this.#afterDomUpdateEvent.clear();
+            }
         }
     }
 
     doAfterUpdateDom(func,params=null){
-        this.context.bindOnce("afterUpdate",()=>func(params));
+        //this.context.bindOnce("afterUpdate",()=>func(params));
+        if(this.#validDom){
+            func(params,this);
+        }else{
+            this.#afterDomUpdateEvent.add((source,paramAnother)=>func(params,source,paramAnother));
+        }
     }
 
     addObject(obj,constrain=null){
@@ -116,14 +134,27 @@ class TwoCompponent extends LayoutComponent{
         }
     }
 
+    update(){
+        this.context.update();
+    }
+
+    getAbsoluteInfo(){
+        return this.shape.getBoundingClientRect(true);
+    }
+
 }
 
 class PathComponent extends TwoCompponent{
-    constructor(context,shape=null){
-        super(context,shape);
+    points;
+    constructor(context,points){
+        super(context,null);
+        this.points = points;
+        this.shape = new Two.Path(points,true,false);
+        this.shape.translation.set(0,0);
         AttrManager.addPropertyListener(this.rect, "x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
     }
+
 }
 
 class TextComponent extends TwoCompponent{
@@ -319,4 +350,4 @@ var TwoComp={
 }
 
 export default TwoComp;
-export {TwoCompponent,RectComponent,TextComponent};
+export {TwoCompponent,RectComponent,TextComponent,PathComponent};

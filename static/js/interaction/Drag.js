@@ -11,11 +11,9 @@ function createDragStateMachine(){
             {name:"leftMouseMove",from:'selected',to:'drag'},
             {name:"leftMouseUp",from:'drag',to:'idle'},
             {name:"leftMouseUp",from:'selected',to:'idle'},
-            //other tramsotopms (for corner cases)
-            //{name:"leftMouseUp",from:'selected',to:'selected'},
+            
             {name:"leftMouseMove",from:'drag',to:'drag'},
-            {name:"leftMouseMove",from:'idle',to:'idle'},
-            //{name:"leftMouseDown",from:'drag',to:'selected'}
+            {name:"leftMouseMove",from:'idle',to:'idle'}
         ]
     });
     return fsm;
@@ -56,22 +54,21 @@ class DragInteraction{
     }
 
     install(shapeDom,pos){
-        shapeDom.onmousedown=(e)=>{
+        shapeDom.addEventListener("mousedown",(e)=>{
+            this.fsm.mouseEventData = e;
             this.fsm.leftMouseDown();
-            console.log("down "+this.fsm.state);
+        });
+        shapeDom.addEventListener("mouseup",(e)=>{
             this.fsm.mouseEventData = e;
-        };
-        shapeDom.onmouseup=(e)=>{
             this.fsm.leftMouseUp();
-            console.log("up "+this.fsm.state);
-            this.fsm.mouseEventData = e;
-        };
+        });
         // to avoid extremely fast movement, 
-        document.onmousemove = shapeDom.onmousemove=(e)=>{
-            this.fsm.leftMouseMove();
-            console.log("move "+this.fsm.state);
+        let func=(e)=>{
             this.fsm.mouseEventData = e;
+            this.fsm.leftMouseMove();
         };
+        document.addEventListener("mousemove",func);
+        shapeDom.addEventListener("mousemove",func);
         this.pos = pos; //hold reference
     }
 

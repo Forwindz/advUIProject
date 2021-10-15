@@ -4,19 +4,31 @@ import {RectComponent} from "../ui/layouts/TwoComponents.js"
 import {NodeUI} from "./NodeUI.js"
 import AttrManager from "../util/ValueChangeManager.js"
 import StateMachine from "javascript-state-machine";
-import {dragStateMachine} from "../util/utils.js"
+import PortDrag from "../interaction/PortDrag.js"
+import EventPublisher from "../util/Events.js";
+
 //https://github.com/jakesgordon/javascript-state-machine
 
 class NodeGroupUI extends RectComponent{
     
-    #nodeUIs=[]; // a dictionary to store node UI Component
+    nodeUIs=[]; // a dictionary to store node UI Component
     data=null;
+    portDragInteraction = new PortDrag();
+    newNodeUIEvent = new EventPublisher();
+
     constructor(_context, data){
         super(_context, null);
         this.initGroup();
         data.eventAddNode.add((source,params)=>this.addNodeUI(params));
         this.data=data;
         this.#generateUI();
+        this.doAfterUpdateDom(()=>{
+            if(!this.shapeDom){
+                return;
+            }
+            this.portDragInteraction.install(this);
+        });
+        
     }
 
 
@@ -26,7 +38,7 @@ class NodeGroupUI extends RectComponent{
 
     addNode(node,x=0,y=0){
         this.data.addNode(node);
-        let posInfo = this.#nodeUIs[node.index].uiData.rect;
+        let posInfo = this.nodeUIs[node.index].uiData.rect;
         posInfo.x =x;
         posInfo.y=y;
     }
@@ -35,10 +47,11 @@ class NodeGroupUI extends RectComponent{
         // add node ui
         console.log("Add node");
         let nodeUI = new NodeUI(this.context,node);
-        this.#nodeUIs[node.index] = nodeUI;
+        this.addObject(nodeUI);
+        this.nodeUIs[node.index] = nodeUI;
         nodeUI.uiData.rect.x=x;
         nodeUI.uiData.rect.y=y;
-        this.addObject(nodeUI);
+        this.newNodeUIEvent.notify(this,nodeUI);
     }
 
     /**
