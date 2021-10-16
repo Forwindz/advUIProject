@@ -1,4 +1,5 @@
 import Two from "../lib/two.js"
+import {removeArrayValue} from "../util/utils.js"
 
 /**
  * Add bindings that will be executed only once,
@@ -32,9 +33,32 @@ class Context extends Two{
 
     update(){
         super.update();
+        for(const domComp of this.#domComps){
+            if(!domComp.shapeDom){
+                domComp.generateDom(this.rootDom);
+            }
+            domComp.updateDomInfo();
+        }
         this.#callOnce("afterUpdate");
     }
 
+    #domComps=[];
+
+    addDomComp(comp){
+        this.#domComps.push(comp);
+    }
+
+    removeDomComp(comp){
+        removeArrayValue(this.#domComps,comp);
+    }
+
+    #rootDom=null;
+    get rootDom(){
+        if(this.#rootDom){
+            return this.#rootDom;
+        }
+        return this.#rootDom = document.getElementById("two-0");
+    }
 
     //abandoned
     // do not use these functions

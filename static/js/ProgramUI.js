@@ -2,7 +2,7 @@ import Two from "./lib/two.js"
 import * as Define from "./data/ProgramDefine.js"
 import {buildContext} from "./ui/uiContext.js"
 import {NodeGroupUI} from "./program/NodeGroupUI.js"
-import {PathComponent} from "./ui/layouts/TwoComponents.js"
+import {PathComponent,TextEditComponent} from "./ui/layouts/TwoComponents.js"
 
 function defineOneNode(){
     // test codes
@@ -30,18 +30,12 @@ export function mainProgramming() {
     let node3 = defineOneNode();
     nodeGroupUI.addNode(node3,210,400);
 
-    let points = []
-    points.push(new Two.Vector(0,0));
-    points.push(new Two.Vector(0,50));
-    points.push(new Two.Vector(50,0));
-    points.push(new Two.Vector(100,100));
-    points.push(new Two.Vector(300,500));
-    points.push(new Two.Vector(700,600));
-    let curve = new PathComponent(context,points);
-    nodeGroupUI.addObject(curve);
-    //context.add(curve.shape);
+    let textEdit = new TextEditComponent(context);
+    textEdit.rect.x=50;
+    textEdit.rect.y=20;
+    nodeGroupUI.nodeUIs[0].addObject(textEdit);
+    //nodeGroupUI.addObject(textEdit);
+
     console.log(nodeGroupUI);
-    context.update();
-    nodeGroupUI.removeObject(curve);
     context.update();
 }

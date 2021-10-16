@@ -182,7 +182,7 @@ class OutputPort extends Port{
     eventDisconnectNode= new EventPublisher();
     eventTryConnectNode= new EventPublisher();
     constructor(){
-
+        
     }
 
     /**

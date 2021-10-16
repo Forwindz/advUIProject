@@ -6,6 +6,7 @@ import AttrManager from "../util/ValueChangeManager.js"
 import StateMachine from "javascript-state-machine";
 import PortDrag from "../interaction/PortDrag.js"
 import EventPublisher from "../util/Events.js";
+import Two from "../lib/two.js";
 
 //https://github.com/jakesgordon/javascript-state-machine
 

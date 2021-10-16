@@ -69,7 +69,7 @@ class LayoutComponent{
             this.#layout.invalid();
         }
         if(this.#father){
-            this.#father.invalid();
+            this.#father.invalidLayout();
         }
     }
 

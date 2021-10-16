@@ -4,11 +4,11 @@ import AttrManager from "../../util/ValueChangeManager.js"
 import EventPublisher from "../../util/Events.js";
 class TwoCompponent extends LayoutComponent{
     
-    #shape; // Two.js objects
-    #shapeDom; // reference to HTML DOM, avaliable ONLY after context updates
-    #shapeGroup = null; // create when we need
+    _shape; // Two.js objects
+    _shapeDom; // reference to HTML DOM, avaliable ONLY after context updates
+    _shapeGroup = null; // create when we need
     context; // Graphic Context (or canvas, if you think it is proper)
-    #validDom=false; //check if update HTML DOM should be updated
+    _validDom=false; //check if update HTML DOM should be updated
     #afterDomUpdateEvent = new EventPublisher(); //this only invoke once, and reset after each event
     //#layer = 0; 
 
@@ -20,34 +20,34 @@ class TwoCompponent extends LayoutComponent{
 
     set shape(v){
         if(v){
-            if(this.#shape && this.#shapeGroup){
-                this.#shapeGroup.remove(this.#shape);
+            if(this._shape && this._shapeGroup){
+                this._shapeGroup.remove(this._shape);
             }
-            this.#shape=v;
+            this._shape=v;
             this.context.bindOnce("afterUpdate",()=>this.updateDom());
-            this.#validDom=false;
+            this._validDom=false;
 
-            let r = this.#shape.getBoundingClientRect();
+            let r = this._shape.getBoundingClientRect();
             this.prefSize.width = r.width;
             this.prefSize.height = r.height;
 
-            if(this.#shape && this.#shapeGroup){
-                this.#shapeGroup.add(this.#shape);
+            if(this._shape && this._shapeGroup){
+                this._shapeGroup.add(this._shape);
             }
 
         }else{
-            this.#shape=null;
-            this.#shapeDom=null;
+            this._shape=null;
+            this._shapeDom=null;
         }
         this.invalidLayout();
     }
 
     get shape(){
-        return this.#shape;
+        return this._shape;
     }
 
     get shapeDom(){
-        return this.#shapeDom;
+        return this._shapeDom;
     }
 
     get context(){
@@ -55,14 +55,14 @@ class TwoCompponent extends LayoutComponent{
     }
 
     updateDom(){
-        if(this.#shape && !this.#validDom){
+        if(this._shape && !this._validDom){
             for(const i of this.objs){ //ensure child objects are updated
                 i.updateDom();
             }
 
-            this.#shapeDom = document.getElementById(this.#shape.id);
-            this.#validDom = this.#shapeDom!=null;
-            if(this.#validDom){
+            this._shapeDom = document.getElementById(this._shape.id);
+            this._validDom = this._shapeDom!=null;
+            if(this._validDom){
                 this.#afterDomUpdateEvent.notify(this,this.shapeDom);
                 this.#afterDomUpdateEvent.clear();
             }
@@ -71,7 +71,7 @@ class TwoCompponent extends LayoutComponent{
 
     doAfterUpdateDom(func,params=null){
         //this.context.bindOnce("afterUpdate",()=>func(params));
-        if(this.#validDom){
+        if(this._validDom){
             func(params,this);
         }else{
             this.#afterDomUpdateEvent.add((source,paramAnother)=>func(params,source,paramAnother));
@@ -80,33 +80,33 @@ class TwoCompponent extends LayoutComponent{
 
     addObject(obj,constrain=null){
         super.addObject(obj,constrain);
-        if(!this.#shapeGroup){
+        if(!this._shapeGroup){
             this.#createGroup();
         }
-        if(obj.#shapeGroup){
-            this.#shapeGroup.add(obj.#shapeGroup);
-        }else{
-            this.#shapeGroup.add(obj.shape);
+        if(obj._shapeGroup){
+            this._shapeGroup.add(obj._shapeGroup);
+        }else if(obj.shape){
+            this._shapeGroup.add(obj.shape);
         }
     }
 
     removeObject(obj){
         super.removeObject(obj);
-        if(this.#shapeGroup){
-            this.#shapeGroup.remove(obj.shape);
+        if(this._shapeGroup){
+            this._shapeGroup.remove(obj.shape);
         }
     }
 
     #createGroup(){
-        this.#shapeGroup = this.context.makeGroup();
-        if(this.#shape){
-            this.#shapeGroup.add(this.#shape);
-            this.#shape.translation.set(0,0);
+        this._shapeGroup = this.context.makeGroup();
+        if(this._shape){
+            this._shapeGroup.add(this._shape);
+            this._shape.translation.set(0,0);
             AttrManager.removePropertyAllListener(this.rect,"x"); // reomve default listener installed by rectangle
             AttrManager.removePropertyAllListener(this.rect,"y");
         }
-        AttrManager.addPropertyListener(this.rect, "x",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
-        AttrManager.addPropertyListener(this.rect, "y",(v)=> this.#shapeGroup.translation.set(this.rect.x,this.rect.y));
+        AttrManager.addPropertyListener(this.rect, "x",(v)=> this._shapeGroup.translation.set(this.rect.x,this.rect.y));
+        AttrManager.addPropertyListener(this.rect, "y",(v)=> this._shapeGroup.translation.set(this.rect.x,this.rect.y));
     }
 
     setPadding(padTop=0,padLeft=0,padBottom=0,padReight=0){
@@ -121,16 +121,16 @@ class TwoCompponent extends LayoutComponent{
      * Init group first, otherwise we might encounter sequence issues for sub components :(
      */
     initGroup(){
-        if(!this.#shapeGroup){
+        if(!this._shapeGroup){
             this.#createGroup();
         }
     }
 
     get id(){
-        if(this.#shapeGroup){
-            return this.#shapeGroup.id;
+        if(this._shapeGroup){
+            return this._shapeGroup.id;
         }else{
-            return this.#shape.id;
+            return this._shape.id;
         }
     }
 
@@ -170,15 +170,27 @@ class TwoCompponent extends LayoutComponent{
 
     removeFromScene(){
         this.context.remove(this.shape);
-        this.#shapeDom=null;
-        this.#validDom=false;
-        if(this.#shapeGroup){
-            this.context.remove(this.#shapeGroup);
-            this.#shapeGroup=null;
+        this._shapeDom=null;
+        this._validDom=false;
+        if(this._shapeGroup){
+            this.context.remove(this._shapeGroup);
+            this._shapeGroup=null;
             for(let obj of this.objs){
                 obj.removeFromScene();
             }
         }
+    }
+
+    setTop(){
+        if(this.father){
+            let father_ = this.father;
+            this.father.removeObject(this);
+            father_.addObject(this);
+        }else{
+            this.context.remove(this.shape);
+            this.context.add(this.shape);
+        }
+        
     }
 
 }
@@ -295,6 +307,103 @@ class RectComponent extends TwoCompponent{
 
 }
 
+class DomComponent extends TwoCompponent{
+    constructor(context){
+        super(context,null);
+        context.addDomComp(this);
+    }
+
+    // this will automatically invoked, when you add this to the context
+    generateDom(contextSVG){
+        this._validDom=true;
+
+    }
+
+    // update position and svg attributes, manipulate by ourselves
+    updateDomInfo(){
+
+    }
+
+    removeFromScene(){
+        this.context.removeDomComp(this);
+        this._shapeDom.remove();
+    }
+}
+
+/**
+ * TextEdit in SVG
+ * This class is a bit special
+ * Since Two.js not support TextEdit in SVG, we manipulate doms by ourselves
+ * The context will handle this in update() method.
+ */
+class TextEditComponent extends DomComponent{
+    _textdiv=null;
+    _textnode=null;
+    constructor(context){
+        super(context,null);
+        AttrManager.addPropertyListener(this.rect,"x",(x)=>this.updateDomInfo());
+        AttrManager.addPropertyListener(this.rect,"y",(y)=>this.updateDomInfo());
+        AttrManager.addPropertyListener(this.rect,"width",(v)=>this._shapeDom.setAttribute("width",this.rect.width));
+        AttrManager.addPropertyListener(this.rect,"height",(v)=>this._shapeDom.setAttribute("height",this.rect.height));
+        AttrManager.addPropertyListener(this.prefSize,"height",(v)=>this._setLimitSize(this.prefSize.width,this.prefSize.height));
+        AttrManager.addPropertyListener(this.prefSize,"width",(v)=>this._setLimitSize(this.prefSize.width,this.prefSize.height));
+    }
+
+    //refer: http://jsfiddle.net/brx3xm59/
+    generateDom(svg){
+        console.log(svg);
+        super.generateDom();
+        let myforeign = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')
+        let textdiv = document.createElement("div");
+        let textnode = document.createTextNode("1.00");
+        textdiv.appendChild(textnode);
+        textdiv.setAttribute("contentEditable", "true");
+        //textdiv.setAttribute("width", "50");
+        myforeign.setAttribute("width", "50px");
+        myforeign.setAttribute("height", "22px");
+        this.prefSize=50;
+        textdiv.style.display="inline-block";
+        textdiv.style.fontSize = "12px";
+        //myforeign.classList.add("foreign"); //to make div fit text
+        //textdiv.classList.add("insideforeign"); //to make div fit text
+        //textdiv.addEventListener("mousedown", elementMousedown, false);
+        myforeign.setAttributeNS(null, "transform", "translate(" + 0 + " " + 0 + ")");
+        svg.appendChild(myforeign);
+        myforeign.appendChild(textdiv);
+
+        this._shapeDom = myforeign;
+        this._textdiv = textdiv;
+        this._textnode = textnode;
+
+        textnode.addEventListener("input",(value)=>{this._textnode.value=value.replace(/[^\d]/g,'')})
+    }
+
+    _setLimitSize(width,height){
+        if(!this._shapeDom){
+            return;
+        }
+        this._shapeDom.setAttribute("width",width+"px");
+        this._shapeDom.setAttribute("height",height+"px");
+        this._textdiv.style.fontSize = (Math.min(width,height)-10)+"px";
+    }
+
+    _updateDomSize(){
+        if(!this._shapeDom){
+            return;
+        }
+        this._shapeDom.setAttribute("width",this.rect.width);
+        this._shapeDom.setAttribute("height",this.rect.height);
+    }
+
+    updateDomInfo(){
+        if(!this._shapeDom){
+            return;
+        }
+        let pos = this.getAbsoluteCanvasPos();
+        this._shapeDom.setAttributeNS(null, "transform", "translate(" + pos.x + " " + pos.y + ")");
+    }
+}
+
 var TwoComp={
 
     /**
@@ -390,4 +499,4 @@ var TwoComp={
 }
 
 export default TwoComp;
-export {TwoCompponent,RectComponent,TextComponent,PathComponent};
+export {TwoCompponent,RectComponent,TextComponent,PathComponent, TextEditComponent};

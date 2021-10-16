@@ -47,7 +47,7 @@ class NodeUI extends RectComponent{
             if(!this.shapeDom){
                 return;
             }
-            this.dragInteraction.install(this.shapeDom,this.uiData.rect);
+            this.dragInteraction.install(this,this.uiData.rect);
         });
         console.log(this);
         

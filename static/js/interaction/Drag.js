@@ -4,7 +4,8 @@ function createDragStateMachine(){
     let fsm = new StateMachine({
         init:'idle',
         data:{
-            mouseEventData:null
+            mouseEventData:null,
+            lastDownShape:null
         },
         transitions:[
             {name:"leftMouseDown",from:'idle',to:'selected'},
@@ -46,6 +47,9 @@ class DragInteraction{
                 this.beginY=this.fsm.mouseEventData.clientY;
                 this.orgX=this.pos.x;
                 this.orgY=this.pos.y;
+            },
+            onEnterSelected:()=>{
+                this.fsm.lastDownShape.setTop();
             }
         });
         if(!dom || !pos){
@@ -54,9 +58,11 @@ class DragInteraction{
         this.install(shapeDom,pos);
     }
 
-    install(shapeDom,pos){
+    install(shape,pos){
+        let shapeDom = shape.shapeDom;
         shapeDom.addEventListener("mousedown",(e)=>{
             this.fsm.mouseEventData = e;
+            this.fsm.lastDownShape = shape;
             this.fsm.leftMouseDown();
         });
         shapeDom.addEventListener("mouseup",(e)=>{
