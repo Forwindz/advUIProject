@@ -15,6 +15,7 @@ class NodeGroupUI extends RectComponent{
     data=null;
     portDragInteraction = new PortDrag();
     newNodeUIEvent = new EventPublisher();
+    connectionUIs = {};
 
     constructor(_context, data){
         super(_context, null);
@@ -43,6 +44,10 @@ class NodeGroupUI extends RectComponent{
         posInfo.y=y;
     }
 
+    addConnectionUI(connectionUI){
+        this.connectionUIs[connectionUI.connectionData]=connectionUI;
+    }
+
     addNodeUI(node,x=0,y=0){
         // add node ui
         console.log("Add node");
@@ -52,6 +57,22 @@ class NodeGroupUI extends RectComponent{
         nodeUI.uiData.rect.x=x;
         nodeUI.uiData.rect.y=y;
         this.newNodeUIEvent.notify(this,nodeUI);
+    }
+
+    getNodeUI(node){
+        return this.nodeUIs[node.index];
+    }
+
+    getInputPortUIIcon(node,port){
+        return this.nodeUIs[node.index].getInputPortUIIcon(port);
+    }
+
+    getOutputPortUIIcon(node,port){
+        return this.nodeUIs[node.index].getOutputPortUIIcon(port);
+    }
+
+    getPortUIIcon(node,port){
+        return this.nodeUIs[node.index].getPortUIIcon(port);
     }
 
     /**

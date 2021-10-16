@@ -1,10 +1,10 @@
-
+import {removeArrayAllValues} from "./utils.js"
 class AttrManager{
     static install(obj){
-        obj.addPropertyListener = AttrManager.prototype.addPropertyListener;
-        obj.addPropertiesListener = AttrManager.prototype.addPropertiesListener;
-        obj.addAllPropertiesListener = AttrManager.prototype.addAllPropertiesListener;
-        obj.removePropertyAllListener = AttrManager.prototype.addAllPropertiesListener;
+        //obj.addPropertyListener = AttrManager.prototype.addPropertyListener;
+        //obj.addPropertiesListener = AttrManager.prototype.addPropertiesListener;
+        //obj.addAllPropertiesListener = AttrManager.prototype.addAllPropertiesListener;
+        //obj.removePropertyAllListener = AttrManager.prototype.addAllPropertiesListener;
     }
     /**
      * Add a listener to the property
@@ -37,7 +37,7 @@ class AttrManager{
                     }
                 });
             }
-            return;
+            return listener;
         }else
         {
             // first time to define, just assign a function 
@@ -55,6 +55,7 @@ class AttrManager{
                     
                 }
             });
+            return listener;
         }
         
     }
@@ -73,10 +74,20 @@ class AttrManager{
         }
     }
 
+    static removePropertyListener(obj,name,listener){
+        const _this = obj;
+        let funcName = `_f_${name}`;
+        let funcVar = _this[funcName];
+        if(funcVar instanceof Array){
+            removeArrayAllValues(funcVar,listener);
+        }else{
+            _this[funcName] = null;
+        }
+    }
+
     static removePropertyAllListener(obj,name){
         const _this = obj;
         let funcName = `_f_${name}`;
-        let innerName = `_${name}`;
         if(funcName in _this){
             let funcVar = _this[funcName];
             if(funcVar instanceof Array){

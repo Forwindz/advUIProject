@@ -91,7 +91,7 @@ class TwoCompponent extends LayoutComponent{
     }
 
     removeObject(obj){
-        super.removeObject(obj,constrain);
+        super.removeObject(obj);
         if(this.#shapeGroup){
             this.#shapeGroup.remove(obj.shape);
         }
@@ -138,8 +138,47 @@ class TwoCompponent extends LayoutComponent{
         this.context.update();
     }
 
-    getAbsoluteInfo(){
-        return this.shape.getBoundingClientRect(true);
+    /**
+     * Get absolute position in the canvas
+     * @returns 
+     */
+    getAbsoluteCanvasPos(){
+        let fatherPos = {x:0,y:0};
+        if(this.father){
+            fatherPos.x=this.father.rect.x;
+            fatherPos.y=this.father.rect.y;
+        }
+        return {
+            x:this.rect.x+fatherPos.x,
+            y:this.rect.y+fatherPos.y,
+            width:this.rect.width,
+            height:this.rect.height
+        };
+    }
+
+    /**
+     * Get absolute position in the whole web
+     * Only avaliable after HTML Dom is generated
+     * @returns 
+     */
+    getAbsoluteDomPos(){
+        if(!this.shapeDom){
+            return null;
+        }
+        return this.shapeDom.getBoundingClientRect();
+    }
+
+    removeFromScene(){
+        this.context.remove(this.shape);
+        this.#shapeDom=null;
+        this.#validDom=false;
+        if(this.#shapeGroup){
+            this.context.remove(this.#shapeGroup);
+            this.#shapeGroup=null;
+            for(let obj of this.objs){
+                obj.removeFromScene();
+            }
+        }
     }
 
 }
@@ -164,6 +203,7 @@ class TextComponent extends TwoCompponent{
         AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.rect.height/2));
         // adjust according to default text align settings
         // TODO: support more text align settings
+        this.doAfterUpdateDom(()=>{this.shapeDom.style.userSelect="none";})
     }
 }
 

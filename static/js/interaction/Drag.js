@@ -11,6 +11,7 @@ function createDragStateMachine(){
             {name:"leftMouseMove",from:'selected',to:'drag'},
             {name:"leftMouseUp",from:'drag',to:'idle'},
             {name:"leftMouseUp",from:'selected',to:'idle'},
+            {name:"leftMouseUp",from:'idle',to:'idle'},
             
             {name:"leftMouseMove",from:'drag',to:'drag'},
             {name:"leftMouseMove",from:'idle',to:'idle'}

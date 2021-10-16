@@ -1,4 +1,4 @@
-import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior} from "../data/ProgramDefine.js";
+import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior,Port,InputPort,OutputPort} from "../data/ProgramDefine.js";
 import AttrManager from "../util/ValueChangeManager.js"
 import TwoComp from "../ui/layouts/TwoComponents.js";
 import {RectComponent} from "../ui/layouts/TwoComponents.js";
@@ -20,8 +20,8 @@ class NodeUI extends RectComponent{
 
     uiData = new NodeUIData();
     nodeData;
-    inputPortUIs=[];
-    outputPortUIs=[];
+    inputPortUIs={};
+    outputPortUIs={};
     
     nodeStyle=defaultNodeStyle;
     portStyle=defaultPortStyle;
@@ -92,7 +92,7 @@ class NodeUI extends RectComponent{
             let pui = new PortUI(this.nodeData.inputPorts[portKey]);
             pui.portTextUI = portText;
             pui.portIconUI = portIcon;
-            this.inputPortUIs.push(pui);
+            this.inputPortUIs[portKey]=(pui);
         }
         
         for(const portKey of Object.keys(this.nodeData.outputPorts)){
@@ -106,7 +106,7 @@ class NodeUI extends RectComponent{
             let pui = new PortUI(this.nodeData.outputPorts[portKey]);
             pui.portTextUI = portText;
             pui.portIconUI = portIcon;
-            this.outputPortUIs.push(pui);
+            this.outputPortUIs[portKey]=(pui);
         }
         
         this.layout.reLayout();
@@ -114,6 +114,23 @@ class NodeUI extends RectComponent{
 
     getPorts(){
         return this.#portShape;
+    }
+
+    getPortUIIcon(port){
+        if(port instanceof InputPort){
+            return this.getInputPortUIIcon(port);
+        }else if (port instanceof OutputPort){
+            return this.getOutputPortUIIcon(port);
+        }
+        return null;
+    }
+
+    getInputPortUIIcon(port){
+        return this.inputPortUIs[port.name].portIconUI;
+    }
+
+    getOutputPortUIIcon(port){
+        return this.outputPortUIs[port.name].portIconUI;
     }
 
 }

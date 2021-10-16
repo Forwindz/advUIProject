@@ -1,6 +1,7 @@
 import StateMachine from "javascript-state-machine";
 import {PathComponent} from "../ui/layouts/TwoComponents.js";
 import EventPublisher from "../util/Events.js"
+import ConnectionUI from "../program/ConnectionUI.js"
 function createPortDragStateMachine(){
     let fsm = new StateMachine({
         init:'idle',
@@ -13,15 +14,15 @@ function createPortDragStateMachine(){
         },
         transitions:[
             {name:"leftMouseDown",from:'idle',to:'selected'},
+            {name:"leftMouseDown",from:'drag',to:'selected'},
             {name:"leftMouseMove",from:'selected',to:'drag'},
-            {name:"leftMouseUp",from:'drag',to:'idle'},
-            {name:"leftMouseUpOutside",from:'drag',to:'idle'},
-            {name:"leftMouseUp",from:'selected',to:'idle'},
-            //other tramsotopms (for corner cases)
             {name:"leftMouseMove",from:'drag',to:'drag'},
             {name:"leftMouseMove",from:'idle',to:'idle'},
             {name:"leftMouseUp",from:'drag',to:'idle'},
+            {name:"leftMouseUp",from:'selected',to:'idle'},
             {name:"leftMouseUp",from:'idle',to:'idle'},
+            {name:"leftMouseUpOutside",from:'drag',to:'idle'},
+            {name:"leftMouseUpOutside",from:'selected',to:'idle'},
             {name:"leftMouseUpOutside",from:'idle',to:'idle'}
         ]
     });
@@ -36,8 +37,7 @@ class PortDrag{
         this.fsm.observe({
             onEnterDrag:()=>this.onEnterDrag(),
             onLeaveDrag:()=>this.onCompleteDrag(),
-            onLeftMouseMove:()=>this.onKeepDraging()//,
-            //onLeftMouseUpOutside:()=>this.onLeftMouseUpOutside()
+            onLeftMouseMove:()=>this.onKeepDraging()
         });
     }
 
@@ -49,29 +49,29 @@ class PortDrag{
             portDom = port.portIconUI.shapeDom;
         }
         portDom.addEventListener("mousedown",(e)=>{
-            //console.log("down "+this.fsm.state);
             this.fsm.mouseEventData = e;
             this.fsm.lastDownPort = port;
             this.fsm.lastDownNode = node;
+            this.fsm.lastUpPort = null;
+            this.fsm.lastUpNode = null;
             this.fsm.leftMouseDown();
         });
         portDom.addEventListener("mouseup",(e)=>{
-            //console.log("up "+this.fsm.state);
             this.fsm.mouseEventData = e;
             this.fsm.lastUpPort = port;
             this.fsm.lastUpNode = node;
             this.fsm.leftMouseUp();
         });
-        portDom.addEventListener("mousemove",(e)=>this.onMouseMove(e));
+        portDom.addEventListener("mousemove",(e)=>{
+            this.onMouseMove(e)
+        });
     }
 
     installNode(nodeUI){
-        //console.log("Install UNode ");
-        //console.log(nodeUI);
-        for(const portUI of nodeUI.inputPortUIs){
+        for(const portUI of Object.values(nodeUI.inputPortUIs)){
             this.#installPort(nodeUI,portUI);
         }
-        for(const portUI of nodeUI.outputPortUIs){
+        for(const portUI of Object.values(nodeUI.outputPortUIs)){
             this.#installPort(nodeUI,portUI);
         }
         nodeUI.shapeDom.addEventListener("mousemove",(e)=>this.onMouseMove(e));
@@ -82,21 +82,19 @@ class PortDrag{
 
     // input NodeGraphUI
     install(panel){
-        //console.log(panel);
-        
         let mdom=document;//panel.shapeDom;
+        
         mdom.addEventListener("mouseup",(e)=>{
             this.onLeftMouseUpOutside(e);
         });
 
-        mdom.addEventListener("mousemove",(e)=>this.onMouseMove(e));
+        mdom.addEventListener("mousemove",(e)=>this.onMouseMove(e),false);
 
         this.panel=panel;
         panel.newNodeUIEvent.add((source,nodeUI)=>this.onAddNode(source,nodeUI));
     }
 
     onMouseMove(e){
-        //console.log("move "+this.fsm.state);
         this.fsm.mouseEventData = e;
         this.fsm.leftMouseMove();
     }
@@ -110,14 +108,8 @@ class PortDrag{
     newline = null;
 
     onEnterDrag(){
-        //console.log("Enter drag "+this.fsm.state);
-        // create a path and add to the panel
-        let beginPos = this.fsm.lastDownPort.portIconUI.rect;
-        let x = beginPos.x+beginPos.width/2;
-        let y = beginPos.y+beginPos.height/2;
-        let points = [new Two.Vector(x,y),new Two.Vector(x,y)];
-        //console.log(this);
-        this.newline = new PathComponent(this.panel.context,points);
+        this.newline = new ConnectionUI(this.panel.context);
+        this.newline.setFirstPort(this.fsm.lastDownNode,this.fsm.lastDownPort);
         this.panel.addObject(this.newline);
         //TODO: draw a curve line :)
     }
@@ -125,57 +117,51 @@ class PortDrag{
     onKeepDraging(){
         if(this.fsm.state!="drag"){
             return; // The library does not support loop transition :(
-                // And I have no time to refine the library :(
         }
-        //console.log("KeepDrag "+this.fsm.state);
-        let ps = this.newline.points;
-        ps[1].x = this.fsm.mouseEventData.clientX;
-        ps[1].y = this.fsm.mouseEventData.clientY;
-        console.log(ps)
-        this.newline.update();
-        //TODO: connect!
+        let absPos = this.panel.getAbsoluteDomPos();
+        let x = this.fsm.mouseEventData.clientX-absPos.x-1;
+        let y = this.fsm.mouseEventData.clientY-absPos.y-1;
+        this.newline.setPoint(1,x,y);
     }
 
     onCompleteDrag(){
-        //console.log("complete Drag "+this.fsm.state);
-        let r=false;
+        console.log("complete Drag "+this.fsm.state);
+        let r=null;
+        console.log(this.fsm.lastDownNode)
+        console.log(this.fsm.lastDownPort)
+        console.log(this.fsm.lastUpNode)
+        console.log(this.fsm.lastUpPort)
         if(this.fsm.lastDownPort&&this.fsm.lastDownNode&&this.fsm.lastUpPort&&this.fsm.lastUpNode){
-            r = this.panel.data.addConnection(
+            r = this.panel.data.addConnectionNoOrder(
                 this.fsm.lastDownPort.portData,
                 this.fsm.lastDownNode.nodeData,
                 this.fsm.lastUpPort.portData,
                 this.fsm.lastUpNode.nodeData,
                 );
+            
         }
         if(r){
-            let endPos = this.fsm.lastUpPort.portIconUI.rect;
-            let x = endPos.x+endPos.width/2;
-            let y = endPos.y+endPos.height/2;
-            let ps = this.newline.points;
-            ps[1].x = x;
-            ps[1].y = y;
-            console.log("End")
-            console.log(ps)
-            this.newline.update();
+            this.newline.setLastPort(this.fsm.lastUpNode,this.fsm.lastUpPort);
+            this.newline.connectionData = r;
+            this.panel.addConnectionUI(this.newline);
+            console.log("Connected");
         }else{
             this.#removeCurrentLine();
+            console.log("Failed Connection");
         }
+        this.fsm.lastUpPort=this.fsm.lastUpNode = null;
         this.newline=null;
     }
 
     onLeftMouseUpOutside(e){
-        //console.log("move up empty "+this.fsm.state);
         this.fsm.mouseEventData = e;
-        this.fsm.lastUpPort=this.fsm.lastUpNode = null;
         this.fsm.leftMouseUpOutside();
     }
 
     #removeCurrentLine(){
-        //console.log("Remove Line "+this.fsm.state);
-        let context = this.newline.context;
-        context.remove(this.newline);
+        this.panel.removeObject(this.newline);
+        this.newline.context.update();
         this.newline=null;
-        context.update();
     }
 
 }

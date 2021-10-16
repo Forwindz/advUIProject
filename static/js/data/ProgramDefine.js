@@ -221,10 +221,7 @@ class OutputPort extends Port{
      * @returns {NodeConnectInfo} Connection Info Object, if the connection is failed, return null
      */
     addConnection(_inputPort,_inputNode,_outputPort,_outputNode){
-        if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
-            return null;
-        }
-        if(!DefinitionManager.getInstance().isCompatType(_inputPort.typeName,_outputPort.typeName)){
+        if(!this.tryConnection(_inputPort,_inputNode,_outputPort,_outputNode)){
             return null;
         }
         let connectInfo = new NodeConnectInfo(_inputPort,_inputNode,_outputPort,_outputNode);
@@ -239,6 +236,9 @@ class OutputPort extends Port{
     tryConnection(_inputPort,_inputNode,_outputPort,_outputNode){
         this.eventTryConnectNode.notify(this,[_inputPort,_inputNode,_outputPort,_outputNode]);
         if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
+            return false;
+        }
+        if(!(_inputPort instanceof InputPort && _outputPort instanceof OutputPort)){
             return false;
         }
         if(!DefinitionManager.getInstance().isCompatType(_inputPort.typeName,_outputPort.typeName)){
@@ -269,6 +269,22 @@ class OutputPort extends Port{
         let _inputPort = _inputNode.inputPorts[_inputPortName];
         let _outputPort = _outputNode.outputPorts[_outputPortName];
         return this.addConnection(_inputPort,_inputNode,_outputPort,_outputNode);
+    }
+
+    /**
+     * Same to addConnection()
+     * Automatically distinct input and output
+     * @param {Port} port1 
+     * @param {Node} node1 
+     * @param {Port} port2 
+     * @param {Node} node2 
+     */
+    addConnectionNoOrder(port1,node1,port2,node2){
+        if(port1 instanceof InputPort){
+            return this.addConnection(port1,node1,port2,node2);
+        }else{
+            return this.addConnection(port2,node2,port1,node1);
+        }
     }
 
 };
@@ -318,6 +334,6 @@ class DefinitionManager{
     }
 };
 
-export {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior}
+export {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior,Port,InputPort,OutputPort}
 
 

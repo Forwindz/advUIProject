@@ -37,8 +37,11 @@ export function mainProgramming() {
     points.push(new Two.Vector(100,100));
     points.push(new Two.Vector(300,500));
     points.push(new Two.Vector(700,600));
-    //let curve = new PathComponent(context,points);
+    let curve = new PathComponent(context,points);
+    nodeGroupUI.addObject(curve);
     //context.add(curve.shape);
     console.log(nodeGroupUI);
+    context.update();
+    nodeGroupUI.removeObject(curve);
     context.update();
 }

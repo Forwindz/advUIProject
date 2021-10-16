@@ -1,5 +1,5 @@
 import AttrManager from "../../util/ValueChangeManager.js"
-
+import { removeArrayValue } from "../../util/utils.js";
 /**
  * Component for layouts,
  * input is a render object
@@ -48,9 +48,11 @@ class LayoutComponent{
     set layout(v){
         let oldLayout = this.#layout;
         this.#layout=v;
-        this.#layout.objs=this.objs;
-        this.#layout.curObj=this;
-        this.invalidLayout();
+        if(v){
+            this.#layout.objs=this.objs;
+            this.#layout.curObj=this;
+            this.invalidLayout();
+        }
         if(oldLayout){
             oldLayout.objs=[];
             oldLayout.curObj=null;
