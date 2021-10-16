@@ -4,11 +4,11 @@ function createDragStateMachine(){
     let fsm = new StateMachine({
         init:'idle',
         data:{
-            mouseEventData:null,
-            lastDownShape:null
+            mouseEventData:null
         },
         transitions:[
             {name:"leftMouseDown",from:'idle',to:'selected'},
+            {name:"otherFocusDown",from:'idle',to:'idle'},
             {name:"leftMouseMove",from:'selected',to:'drag'},
             {name:"leftMouseUp",from:'drag',to:'idle'},
             {name:"leftMouseUp",from:'selected',to:'idle'},
@@ -21,7 +21,7 @@ function createDragStateMachine(){
     return fsm;
 }
 
-class DragInteraction{
+class PanelDragInteraction{
     fsm;
     beginX=0;
     beginY=0;
@@ -29,7 +29,7 @@ class DragInteraction{
     orgY=0;
     #shape;
     pos=null; // include x, y, suggest to use getter and setter to react the new values
-    constructor(shape=null,pos=null){
+    constructor(context=null){
         this.fsm = createDragStateMachine();
         this.fsm.observe({
             onLeftMouseMove:()=>{
@@ -38,36 +38,31 @@ class DragInteraction{
                 }
                 let tempx=this.fsm.mouseEventData.clientX;
                 let tempy=this.fsm.mouseEventData.clientY;
-                // scaling dx&dy
-                let dx = (tempx-this.beginX)/this.#shape.context.scene.scale;
-                let dy = (tempy-this.beginY)/this.#shape.context.scene.scale;
+                let dx = tempx-this.beginX;
+                let dy = tempy-this.beginY;
                 this.pos.x=dx+this.orgX;
                 this.pos.y=dy+this.orgY;
+                this.#shape.update();
             },
             onLeftMouseDown:()=>{
                 this.beginX=this.fsm.mouseEventData.clientX;
                 this.beginY=this.fsm.mouseEventData.clientY;
                 this.orgX=this.pos.x;
                 this.orgY=this.pos.y;
-            },
-            onEnterSelected:()=>{
-                this.fsm.lastDownShape.setTop();
             }
         });
-        if(!shape || !pos){
+        if(!context){
             return;
         }
-        this.install(shape,pos);
+        this.install(context);
     }
 
-    install(shape,pos){
-        let shapeDom = shape.shapeDom;
+    install(shape,svg){
+        let shapeDom = svg;
         shapeDom.addEventListener("mousedown",(e)=>{
             this.fsm.mouseEventData = e;
-            this.fsm.lastDownShape = shape;
             this.fsm.leftMouseDown();
-            e.stopPropagation(); //avoid to pass to the panel
-        },true);
+        },false);
         shapeDom.addEventListener("mouseup",(e)=>{
             this.fsm.mouseEventData = e;
             this.fsm.leftMouseUp();
@@ -79,11 +74,11 @@ class DragInteraction{
         };
         document.addEventListener("mousemove",func);
         shapeDom.addEventListener("mousemove",func);
+        this.pos = shape.scene.translation; //hold reference
         this.#shape=shape;
-        this.pos = pos; //hold reference
     }
 
 }
 
 
-export {DragInteraction}
+export {PanelDragInteraction}

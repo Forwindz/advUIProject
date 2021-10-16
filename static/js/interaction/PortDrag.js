@@ -55,7 +55,8 @@ class PortDrag{
             this.fsm.lastUpPort = null;
             this.fsm.lastUpNode = null;
             this.fsm.leftMouseDown();
-        });
+            e.stopPropagation();//avoid pass to node & panel, own the focus
+        },true);
         portDom.addEventListener("mouseup",(e)=>{
             this.fsm.mouseEventData = e;
             this.fsm.lastUpPort = port;
@@ -119,8 +120,8 @@ class PortDrag{
             return; // The library does not support loop transition :(
         }
         let absPos = this.panel.getAbsoluteDomPos();
-        let x = this.fsm.mouseEventData.clientX-absPos.x-1;
-        let y = this.fsm.mouseEventData.clientY-absPos.y-1;
+        let x = (this.fsm.mouseEventData.clientX-absPos.x)/this.scale-1;
+        let y = (this.fsm.mouseEventData.clientY-absPos.y)/this.scale-1;
         this.newline.setPoint(1,x,y);
     }
 
@@ -162,6 +163,10 @@ class PortDrag{
         this.panel.removeObject(this.newline);
         this.newline.context.update();
         this.newline=null;
+    }
+
+    get scale(){
+        return this.panel.context.scene.scale;
     }
 
 }
