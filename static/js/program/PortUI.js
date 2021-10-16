@@ -7,9 +7,21 @@ class PortUI{
     portData=null;
     portTextUI = null;
     portIconUI = null;
+    portInput = null;
 
     constructor(portData){
         this.portData = portData;
+    }
+
+    processUI(){
+        if(this.portInput){
+            this.portInput.textdiv.addEventListener("input",
+            (v)=>{
+                let value = this.portInput.textdiv.innerHTML;
+                this.portData.defaultValue=value;
+                console.log(value);
+            })
+        }
     }
 }
 

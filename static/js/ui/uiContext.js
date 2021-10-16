@@ -34,8 +34,8 @@ class Context extends Two{
     update(){
         super.update();
         for(const domComp of this.#domComps){
-            if(!domComp.shapeDom){
-                domComp.generateDom(this.rootDom);
+            if(!domComp.installedDom){
+                domComp.installDom(this.rootDom);
             }
             domComp.updateDomInfo();
         }
@@ -50,6 +50,7 @@ class Context extends Two{
 
     removeDomComp(comp){
         removeArrayValue(this.#domComps,comp);
+        comp.installedDom=false;
     }
 
     #rootDom=null;

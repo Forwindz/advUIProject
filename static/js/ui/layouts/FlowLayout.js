@@ -1,7 +1,10 @@
 import Layout from "./Layout.js"
 
 class FlowLayout extends Layout{
-    static AlignType = {TOP:1,LEFT:2,BOTTOM:4,RIGHT:8,CENTERX:16,CENTERY:32, CENTER:48}; //TODO: simulate static const
+    // align type, use | to combine x and y options
+    // Absolute x/y means the layout will not change the x,y when layout, also this will not impact related axis
+    static AlignType = {TOP:1,LEFT:2,BOTTOM:4,RIGHT:8,CENTERX:16,CENTERY:32, CENTER:48, ABSOLUTEX:64, ABSOLUTEY:128}; 
+    
     static Orientation = {X:0,Y:1};
     /**
      * Constrain size
@@ -13,6 +16,8 @@ class FlowLayout extends Layout{
      * Oritantion, currently we only support X
      */
     orient = FlowLayout.Orientation.X;
+
+    minSize= {width:0,height:0};
 
     /**
      * @param {number} v
@@ -55,24 +60,29 @@ class FlowLayout extends Layout{
             let lastElement=0;
             for(let i=0;i<this.objs.length;i++){
                 const obj = this.objs[i];
+                if(obj.constrain.align & FlowLayout.AlignType.ABSOLUTEX){
+                    continue;
+                }
                 const w = obj.prefSize.width+obj.padding.left+obj.padding.right;
                 const h = obj.prefSize.height+obj.padding.top+obj.padding.bottom;
                 
                 if((this.constrainSize.width<0 || leftWidth>=w)&& (!obj.constrain.newline|| i==0)){//enough width, newline is false
                     widthTotal+=w;
-                    lineMaxHeight = Math.max(h,lineMaxHeight);
+                    if(!(obj.constrain.align&FlowLayout.AlignType.ABSOLUTEY)){
+                        lineMaxHeight = Math.max(h,lineMaxHeight);
+                    }
                     if(leftWidth>0){
                         leftWidth-=w;
                     }
                 }else{//inadequate width, add one line!
                     lineInfo.push({width:widthTotal,height:lineMaxHeight,elementBegin:lastElement,elementEnd:i});
                     if(this.constrainSize.width<0){
-                        maxWidth = Math.max(maxWidth,widthTotal);
+                        maxWidth = Math.max(Math.max(maxWidth,widthTotal),this.minSize.width);
                     }
                     lastElement=i;
                     leftWidth = this.constrainSize.width;
                     widthTotal= w;
-                    lineMaxHeight = h;
+                    lineMaxHeight = Math.max(h,this.minSize.height);
                 }
                 //check alignment settings: can be commented
                 /*
@@ -113,7 +123,9 @@ class FlowLayout extends Layout{
                         rect.y = yOffset+obj.padding.top;
                     }else if(obj.constrain.align & FlowLayout.AlignType.BOTTOM){
                         rect.y = yOffset+line.height-h-obj.padding.bottom;
-                    }else {
+                    }else if(obj.constrain.align&FlowLayout.AlignType.ABSOLUTEY){
+                        rect.y = obj.rect.y;
+                    }else{
                         let leftHeight = Math.floor((line.height-h-obj.padding.bottom-obj.padding.top)/2);
                         rect.y = yOffset+obj.padding.top+leftHeight;
                     }
@@ -128,6 +140,8 @@ class FlowLayout extends Layout{
                          *     ConstrainWidth-line.width
                          */
                         rect.x = xOffset+maxWidth-line.width+obj.padding.left;
+                    }else if(obj.constrain.align&FlowLayout.AlignType.ABSOLUTEX){
+                        rect.x = obj.rect.x;
                     }else {
                         let leftWidth = Math.floor((maxWidth-line.width-obj.padding.left-obj.padding.right)/2);
                         rect.x = xOffset+obj.padding.left+leftWidth;
@@ -138,7 +152,7 @@ class FlowLayout extends Layout{
                     obj.rect.width = obj.prefSize.width;
                     obj.rect.x=rect.x;
                     obj.rect.y=rect.y;
-                    
+                    console.log(rect);
                     xOffset+=w+obj.padding.left+obj.padding.right;
                 }
                 yOffset+=line.height;

@@ -308,20 +308,20 @@ class RectComponent extends TwoCompponent{
 }
 
 class DomComponent extends TwoCompponent{
+    installedDom=false;
     constructor(context){
         super(context,null);
         context.addDomComp(this);
     }
 
-    // this will automatically invoked, when you add this to the context
-    generateDom(contextSVG){
-        this._validDom=true;
-
-    }
-
     // update position and svg attributes, manipulate by ourselves
     updateDomInfo(){
 
+    }
+
+    installDom(context){
+        this.installedDom=true;
+        this._validDom=true;
     }
 
     removeFromScene(){
@@ -339,47 +339,69 @@ class DomComponent extends TwoCompponent{
 class TextEditComponent extends DomComponent{
     _textdiv=null;
     _textnode=null;
+    _text="";
     constructor(context){
-        super(context,null);
+        super(context);
+        this.generateDom();
         AttrManager.addPropertyListener(this.rect,"x",(x)=>this.updateDomInfo());
         AttrManager.addPropertyListener(this.rect,"y",(y)=>this.updateDomInfo());
-        AttrManager.addPropertyListener(this.rect,"width",(v)=>this._shapeDom.setAttribute("width",this.rect.width));
-        AttrManager.addPropertyListener(this.rect,"height",(v)=>this._shapeDom.setAttribute("height",this.rect.height));
+        AttrManager.addPropertyListener(this.rect,"width",(v)=>{if(this._shapeDom)this._shapeDom.setAttribute("width",this.rect.width)});
+        AttrManager.addPropertyListener(this.rect,"height",(v)=>{if(this._shapeDom)this._shapeDom.setAttribute("height",this.rect.height)});
         AttrManager.addPropertyListener(this.prefSize,"height",(v)=>this._setLimitSize(this.prefSize.width,this.prefSize.height));
         AttrManager.addPropertyListener(this.prefSize,"width",(v)=>this._setLimitSize(this.prefSize.width,this.prefSize.height));
     }
 
     //refer: http://jsfiddle.net/brx3xm59/
-    generateDom(svg){
-        console.log(svg);
-        super.generateDom();
+    generateDom(){
         let myforeign = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject')
+        
         let textdiv = document.createElement("div");
-        let textnode = document.createTextNode("1.00");
+        let textnode = document.createTextNode(this._text);
         textdiv.appendChild(textnode);
-        textdiv.setAttribute("contentEditable", "true");
-        //textdiv.setAttribute("width", "50");
+        myforeign.style.alignItems="center";
+        myforeign.style.display ="flex";
+        myforeign.style.justifyContent ="center";
+        myforeign.style.userSelect = textdiv.style.userSelect="none";
+        //textdiv.setAttribute("contentEditable", "true");
+        textdiv.setAttribute("tabindex", "0"); // allow "onBlur" event
+        //textdiv.setAttribute("width", "100%");
+        //textdiv.setAttribute("height", "100%");
+        textdiv.style.alignItems="center";
+        textdiv.style.alignText="center";
+        textdiv.style.justifyContent="center";
+        textdiv.style.display ="flex";
         myforeign.setAttribute("width", "50px");
         myforeign.setAttribute("height", "22px");
-        this.prefSize=50;
-        textdiv.style.display="inline-block";
+        myforeign.style.padding = textdiv.style.padding = "0px";
+        myforeign.style.margin = textdiv.style.margin = "0 auto";
+        //textdiv.style.marginTop="10px";
+        //textdiv.style.display="inline-block";
         textdiv.style.fontSize = "12px";
-        //myforeign.classList.add("foreign"); //to make div fit text
-        //textdiv.classList.add("insideforeign"); //to make div fit text
-        //textdiv.addEventListener("mousedown", elementMousedown, false);
+        myforeign.style.border = "1px solid black";
         myforeign.setAttributeNS(null, "transform", "translate(" + 0 + " " + 0 + ")");
-        svg.appendChild(myforeign);
+       
         myforeign.appendChild(textdiv);
 
+        // avoid selection
+        textdiv.addEventListener("mousedown",()=>{this._textdiv.setAttribute("contentEditable", "true");});
+        textdiv.addEventListener("blur",()=>{this._textdiv.setAttribute("contentEditable", "false");});
         this._shapeDom = myforeign;
         this._textdiv = textdiv;
         this._textnode = textnode;
+    }
 
-        textnode.addEventListener("input",(value)=>{this._textnode.value=value.replace(/[^\d]/g,'')})
+    installDom(svg){
+        super.installDom(svg);
+        svg.appendChild(this._shapeDom);
+    }
+
+    get textdiv(){
+        return this._textdiv;
     }
 
     _setLimitSize(width,height){
         if(!this._shapeDom){
+            this.doAfterUpdateDom(()=>this._setLimitSize(width,height));
             return;
         }
         this._shapeDom.setAttribute("width",width+"px");
@@ -400,7 +422,14 @@ class TextEditComponent extends DomComponent{
             return;
         }
         let pos = this.getAbsoluteCanvasPos();
-        this._shapeDom.setAttributeNS(null, "transform", "translate(" + pos.x + " " + pos.y + ")");
+        this._shapeDom.setAttributeNS(null, "transform", "translate(" + (pos.x-pos.width/2) + " " + (pos.y-pos.height/2) + ")");
+    }
+
+    set text(v){
+        if(this._textdiv){
+            this._textdiv.innerHTML=v;
+        }
+        this._text=v;
     }
 }
 

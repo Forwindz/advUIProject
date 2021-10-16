@@ -1,7 +1,7 @@
 import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior,Port,InputPort,OutputPort} from "../data/ProgramDefine.js";
 import AttrManager from "../util/ValueChangeManager.js"
-import TwoComp from "../ui/layouts/TwoComponents.js";
-import {RectComponent} from "../ui/layouts/TwoComponents.js";
+import TwoComp, { TwoCompponent } from "../ui/layouts/TwoComponents.js";
+import {RectComponent,TextEditComponent} from "../ui/layouts/TwoComponents.js";
 import FlowLayout from "../ui/layouts/FlowLayout.js";
 import {PortUIStyle,NodeUIStyle,defaultNodeStyle,defaultPortStyle} from "./Styles.js";
 import {NodeUIData} from "./ProgramUIData.js";
@@ -75,24 +75,39 @@ class NodeUI extends RectComponent{
 
     #generateUI(){
         this.layout=new FlowLayout();
+        this.layout.minSize.height=30;
 
         //title 
         let nodeTitle = TwoComp.makeText(this.context,"Title");
-        nodeTitle.setPadding(8,0,12,0);
+        nodeTitle.setPadding(10,0,5,0);
         this.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
         
         for(const portKey of Object.keys(this.nodeData.inputPorts)){
-            let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,15,5);
+            let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,0,5);
             let portText = TwoComp.makeText(this.context,portKey);
+            let portDefaultInput = null;
+            let portData=this.nodeData.inputPorts[portKey];
+            if(portData.defaultValue != null){
+                portDefaultInput = new TextEditComponent(this.context);
+                portDefaultInput.prefSize.width=35;
+                portDefaultInput.prefSize.height=20;
+                portDefaultInput.rect.x = -20;
+                portDefaultInput.text = ""+portData.defaultValue;
+            }
             portText.setPadding(0,0,0,5);
             this.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
             this.addObject(portText,{newline:false,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
+            if(portDefaultInput){
+                this.addObject(portDefaultInput,{newline:false,align:FlowLayout.AlignType.ABSOLUTEX|FlowLayout.AlignType.CENTERY});
+            }
             this.#portShape.push(portIcon);
 
-            let pui = new PortUI(this.nodeData.inputPorts[portKey]);
+            let pui = new PortUI(portData);
             pui.portTextUI = portText;
             pui.portIconUI = portIcon;
+            pui.portInput = portDefaultInput;
             this.inputPortUIs[portKey]=(pui);
+            pui.processUI();
         }
         
         for(const portKey of Object.keys(this.nodeData.outputPorts)){
@@ -107,6 +122,7 @@ class NodeUI extends RectComponent{
             pui.portTextUI = portText;
             pui.portIconUI = portIcon;
             this.outputPortUIs[portKey]=(pui);
+            pui.processUI();
         }
         
         this.layout.reLayout();
