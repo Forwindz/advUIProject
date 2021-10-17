@@ -27,6 +27,7 @@ class NodeUI extends RectComponent{
     portStyle=defaultPortStyle;
 
     #portShape=[];
+    phyObj;
 
     dragInteraction = new DragInteraction();
     constructor(_context, data){
@@ -126,6 +127,7 @@ class NodeUI extends RectComponent{
         }
         
         this.layout.reLayout();
+        this.phyObj = this.context.phyContext.addForceField(this.rect,this.rect.width,this.rect.height);
     }
 
     getPorts(){

@@ -169,6 +169,9 @@ class TwoCompponent extends LayoutComponent{
     }
 
     removeFromScene(){
+        if(this.father){
+            this.father=null;
+        }
         this.context.remove(this.shape);
         this._shapeDom=null;
         this._validDom=false;
@@ -200,8 +203,9 @@ class PathComponent extends TwoCompponent{
     constructor(context,points){
         super(context,null);
         this.points = points;
-        this.shape = new Two.Path(points,true,false);
+        this.shape = new Two.Path(points,false,true,false);
         this.shape.translation.set(0,0);
+        this.shape.fill = "#0000";
         AttrManager.addPropertyListener(this.rect, "x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
     }

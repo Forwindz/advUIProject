@@ -1,6 +1,6 @@
 import Two from "../lib/two.js"
 import {removeArrayValue} from "../util/utils.js"
-
+import {PhyContext} from "./layouts/ForcePoints.js"
 /**
  * Add bindings that will be executed only once,
  * useful when we update doms and need to do some new operations.
@@ -9,10 +9,12 @@ import {removeArrayValue} from "../util/utils.js"
 class Context extends Two{
 
     #eventRecord = [];
+    phyContext = new PhyContext();
 
     constructor(twoParams){
         super(twoParams);
         this.#eventRecord["afterUpdate"] = new Array();
+        setInterval(()=>this.update(),50);
     }
 
     bindOnce(event,callback){

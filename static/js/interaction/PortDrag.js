@@ -110,6 +110,7 @@ class PortDrag{
 
     onEnterDrag(){
         this.newline = new ConnectionUI(this.panel.context);
+        this.newline.panelUI=this.panel;
         this.newline.setFirstPort(this.fsm.lastDownNode,this.fsm.lastDownPort);
         this.panel.addObject(this.newline);
         //TODO: draw a curve line :)
@@ -161,7 +162,7 @@ class PortDrag{
 
     #removeCurrentLine(){
         this.panel.removeObject(this.newline);
-        this.newline.context.update();
+        this.newline.removeFromScene();
         this.newline=null;
     }
 
