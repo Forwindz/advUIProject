@@ -3,7 +3,7 @@ import AttrManager from "../util/ValueChangeManager.js"
 import TwoComp, { TwoCompponent } from "../ui/layouts/TwoComponents.js";
 import {RectComponent,TextEditComponent} from "../ui/layouts/TwoComponents.js";
 import FlowLayout from "../ui/layouts/FlowLayout.js";
-import {PortUIStyle,NodeUIStyle,defaultNodeStyle,defaultPortStyle} from "./Styles.js";
+//import {PortUIStyle,NodeUIStyle,defaultNodeStyle,defaultPortStyle} from "./Styles.js";
 import {NodeUIData} from "./ProgramUIData.js";
 import StateMachine from "javascript-state-machine";
 import {DragInteraction} from "../interaction/Drag.js"
@@ -23,8 +23,8 @@ class NodeUI extends RectComponent{
     inputPortUIs={};
     outputPortUIs={};
     
-    nodeStyle=defaultNodeStyle;
-    portStyle=defaultPortStyle;
+    //nodeStyle=defaultNodeStyle;
+    //portStyle=defaultPortStyle;
 
     #portShape=[];
     phyObj;
@@ -36,6 +36,7 @@ class NodeUI extends RectComponent{
         this.nodeData = data;
         this.generateRenderData();
         //bind data
+        this.styleTag = "node";
         AttrManager.addAllPropertiesListener(this.uiData.rect,
             (v)=>{
                 this.rect.x=this.uiData.rect.x;
@@ -76,16 +77,19 @@ class NodeUI extends RectComponent{
 
     #generateUI(){
         this.layout=new FlowLayout();
-        this.layout.minSize.height=30;
+        this.layout.minSize.height=28;
 
         //title 
         let nodeTitle = TwoComp.makeText(this.context,"Title");
-        nodeTitle.setPadding(10,0,5,0);
+        nodeTitle.styleTag = "nodeTitle";
+        nodeTitle.setPadding(16,0,8,0);
         this.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
         
         for(const portKey of Object.keys(this.nodeData.inputPorts)){
             let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,0,5);
             let portText = TwoComp.makeText(this.context,portKey);
+            portIcon.styleTag = "inPortIcon";
+            portText.styleTag = "inPortText";
             let portDefaultInput = null;
             let portData=this.nodeData.inputPorts[portKey];
             if(portData.defaultValue != null){
@@ -94,6 +98,7 @@ class NodeUI extends RectComponent{
                 portDefaultInput.prefSize.height=20;
                 portDefaultInput.rect.x = -20;
                 portDefaultInput.text = ""+portData.defaultValue;
+                portDefaultInput.styleTag = "inPortDefault";
             }
             portText.setPadding(0,0,0,5);
             this.addObject(portIcon,{newline:true,align:FlowLayout.AlignType.LEFT|FlowLayout.AlignType.TOP});
@@ -114,6 +119,8 @@ class NodeUI extends RectComponent{
         for(const portKey of Object.keys(this.nodeData.outputPorts)){
             let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,15,5);
             let portText = TwoComp.makeText(this.context,portKey);
+            portIcon.styleTag = "outPortIcon";
+            portText.styleTag = "outPortText";
             portText.setPadding(0,5,0,0);
             this.addObject(portText,{newline:true,align:FlowLayout.AlignType.RIGHT|FlowLayout.AlignType.TOP});
             this.addObject(portIcon,{newline:false,align:FlowLayout.AlignType.RIGHT|FlowLayout.AlignType.TOP});

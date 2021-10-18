@@ -14,7 +14,7 @@ class Context extends Two{
     constructor(twoParams){
         super(twoParams);
         this.#eventRecord["afterUpdate"] = new Array();
-        setInterval(()=>this.update(),50);
+        setInterval(()=>this.update(),30);
     }
 
     bindOnce(event,callback){

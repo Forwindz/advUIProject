@@ -47,11 +47,12 @@ class ForcePoint{
     mass = 1.0;
     fixed=false;
     friction = 0.2;
+    enable=true;
 
     speed = {x:0,y:0};
     relatedForce = [];
     force = {x:0,y:0};
-    limit=20;
+    limit=50;
 
     constructor(refPoint){
         this.refPoint = refPoint;
@@ -90,6 +91,7 @@ class ForceSpring{
     refPoint2=null;
     fp1=null;
     fp2=null;
+    enable=true;
     k = 0.01; //elasticity, higher means larger force
     orgLength = 10.0;
 
@@ -129,6 +131,7 @@ class ForcePointField{
     strengthX=10.0;
     strengthY=10.0;
     limit=100;
+    enable=true;
 
     avoid=[];
 
@@ -144,9 +147,11 @@ class ForcePointField{
             d = this.#getDelta(p);
             let len = vecLength(d);
             let norm = vecDiv(d,Math.max(1e-3,len));
-            let totalPower = this.strengthX*Math.max(0,1-len/this.rangeY);
-            fx = totalPower*norm.x;
-            fy = totalPower*norm.y;
+            let range = Math.max(this.rangeY,this.rangeX);
+            let xfactor=Math.max(0,1.0-Math.abs(len/range));
+            let yfactor=Math.max(0,1.0-Math.abs(len/range));
+            fx = this.strengthX*xfactor*norm.x;
+            fy = this.strengthY*yfactor*norm.y;
             fx = Math.max(-this.limit,Math.min(this.limit,fx));
             fy = Math.max(-this.limit,Math.min(this.limit,fy));
             p.addForce(fx,fy);
@@ -162,30 +167,27 @@ class ForcePointField{
         let d=null;
         for(const p of points){
             if(this.avoid.includes(p)){
-                console.log("Avoid!")
-                console.log(p);
                 continue;
             }
             d = this.#getDelta(p);
-            if(Math.abs(d.x)<this.rangeY && Math.abs(d.y)<this.rangeY){
+            let range = Math.max(this.rangeX,this.rangeY);
+            if(Math.abs(d.x)<range && Math.abs(d.y)<range){
                 this.#relatedPoints.push(p);
             }
         }
     }
 
     addAvoid(obj){
-        console.log(obj);
         if(obj instanceof Array){
             this.avoid = this.avoid.concat(obj);
         }else{
             this.avoid.push(obj);
         }
-        console.log(this.avoid);
     }
 
     removeAvoid(obj){
         if(obj instanceof Array){
-            for(o of obj){
+            for(const o of obj){
                 removeArrayValue(this.avoid,o);
             }
         }else{
@@ -207,6 +209,7 @@ class ForceToPoint{
     strength=10;
     p=null;
     refPoint=null;
+    enable=true;
     constructor(referPoint,p){
         this.p=p;
         this.refPoint=referPoint;
@@ -214,8 +217,8 @@ class ForceToPoint{
 
     applyForce(){
         let d = vecSub(this.refPoint,this.p.refPoint);
-        d.x = Math.max(-15,Math.min(15,d.x));
-        d.y = Math.max(-15,Math.min(15,d.y));
+        d.x = Math.max(-30,Math.min(30,d.x));
+        d.y = Math.max(-30,Math.min(30,d.y));
         let fx = this.strength * d.x;
         let fy = this.strength * d.y;
         this.p.addForce(fx,fy);
@@ -229,14 +232,14 @@ class ForceToPoint{
 class PhyContext{
     points = [];
     forces = [];
-    deltaTime = 80; //currently we did not support change
+    deltaTime = 30; //currently we did not support change
     deltaCheckMulti = 10;
     #innerCount=0;
     constructor(){
         setInterval(()=>this.update(),this.deltaTime);
     }
 
-    addPoint(refPoint,fixed=false,mass=0.02,friction=0.8){
+    addPoint(refPoint,fixed=false,mass=0.005,friction=0.65){
         let p = new ForcePoint(refPoint);
         p.fixed=fixed;
         p.mass=mass;
@@ -245,14 +248,14 @@ class PhyContext{
         return p;
     }
 
-    addSpring(f1,f2,k=0.00000002){
+    addSpring(f1,f2,k=0.2){
         let p = new ForceSpring(f1,f2);
         p.k=k;
         this.forces.push(p);
         return p;
     }
 
-    addForceField(refPoint,rx=50,ry=50,fx=100,fy=150){
+    addForceField(refPoint,rx=50,ry=50,fx=200,fy=200){
         let p = new ForcePointField(refPoint);
         p.rangeX=rx;
         p.rangeY=ry;
@@ -262,7 +265,7 @@ class PhyContext{
         return p;
     }
 
-    addForceToPoint(refPoint,po,f=2.0){
+    addForceToPoint(refPoint,po,f=0.5){
         let p =new ForceToPoint(refPoint,po);
         p.strength=f;
         this.forces.push(p);
@@ -273,7 +276,8 @@ class PhyContext{
     update(){
         if(this.#innerCount==0){
             for(const force of this.forces){
-                force.checkForce(this.points);
+                if(force.enable)
+                    force.checkForce(this.points);
             }
             if(!this.#logged){
                 console.log(this);
@@ -286,10 +290,12 @@ class PhyContext{
         
         let deltaS=this.deltaTime/1000.0;
         for(const force of this.forces){
-            force.applyForce();
+            if(force.enable)
+                force.applyForce();
         }
         for(const point of this.points){
-            point.update(deltaS);
+            if(point.enable)
+                point.update(deltaS);
         }
 
         this.#innerCount++;

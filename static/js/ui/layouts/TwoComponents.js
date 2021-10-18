@@ -9,6 +9,7 @@ class TwoCompponent extends LayoutComponent{
     _shapeGroup = null; // create when we need
     context; // Graphic Context (or canvas, if you think it is proper)
     _validDom=false; //check if update HTML DOM should be updated
+    _styleTag="";
     #afterDomUpdateEvent = new EventPublisher(); //this only invoke once, and reset after each event
     //#layer = 0; 
 
@@ -40,6 +41,22 @@ class TwoCompponent extends LayoutComponent{
             this._shapeDom=null;
         }
         this.invalidLayout();
+    }
+
+    get styleTag(){
+        return this._styleTag;
+    }
+
+    set styleTag(v){
+        if(!v){
+            v="";
+        }
+        this._styleTag=v;
+        if(this.shapeDom){
+            this.shapeDom.setAttribute("uiStyle",this._styleTag);
+        }else{
+            this.doAfterUpdateDom(()=>this.styleTag=this._styleTag);
+        }
     }
 
     get shape(){
@@ -208,6 +225,7 @@ class PathComponent extends TwoCompponent{
         this.shape.fill = "#0000";
         AttrManager.addPropertyListener(this.rect, "x",(x)=>this.shape.translation.set(x,this.shape.translation.y));
         AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y));
+        
     }
 
 }
@@ -381,7 +399,7 @@ class TextEditComponent extends DomComponent{
         //textdiv.style.marginTop="10px";
         //textdiv.style.display="inline-block";
         textdiv.style.fontSize = "12px";
-        myforeign.style.border = "1px solid black";
+        //myforeign.style.border = "1px solid black";
         myforeign.setAttributeNS(null, "transform", "translate(" + 0 + " " + 0 + ")");
        
         myforeign.appendChild(textdiv);
@@ -392,6 +410,18 @@ class TextEditComponent extends DomComponent{
         this._shapeDom = myforeign;
         this._textdiv = textdiv;
         this._textnode = textnode;
+        this._validDom = true;
+    }
+
+    get styleTag(){
+        return this._styleTag;
+    }
+
+    set styleTag(v){
+        this._styleTag=v;
+        if(v && v!=""){
+            this.doAfterUpdateDom(()=>this._textdiv.setAttribute("uiStyle",this._styleTag));
+        }
     }
 
     installDom(svg){

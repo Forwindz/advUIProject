@@ -32,6 +32,10 @@ class NodeConnectInfo{
         this.outputNode = _outputNode;
         this.outputPort = _outputPort;
     }
+
+    toString(){
+        return this.inputNode.index+"&"+this.inputPort.name+"|"+this.outputNode.index+"&"+this.outputPort.name;
+    }
 };
 /**
  * Node class, describe a node

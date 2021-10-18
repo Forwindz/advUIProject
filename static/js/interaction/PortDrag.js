@@ -2,6 +2,8 @@ import StateMachine from "javascript-state-machine";
 import {PathComponent} from "../ui/layouts/TwoComponents.js";
 import EventPublisher from "../util/Events.js"
 import ConnectionUI from "../program/ConnectionUI.js"
+import {InputPort} from "../data/ProgramDefine.js"
+import { removeArrayValue } from "../util/utils.js";
 function createPortDragStateMachine(){
     let fsm = new StateMachine({
         init:'idle',
@@ -15,6 +17,14 @@ function createPortDragStateMachine(){
         transitions:[
             {name:"leftMouseDown",from:'idle',to:'selected'},
             {name:"leftMouseDown",from:'drag',to:'selected'},
+
+            {name:"leftMouseDownExist",from:'idle',to:'selectedExist'}, //exist line
+            {name:"leftMouseMove",from:'selectedExist',to:'dragExist'},
+            {name:"leftMouseMove",from:'dragExist',to:'dragExist'},
+            {name:"leftMouseUp",from:'selectedExist',to:'idle'},
+            {name:"leftMouseUp",from:'dragExist',to:'idle'},
+            {name:"leftMouseUpOutside",from:'dragExist',to:'idle'},
+
             {name:"leftMouseMove",from:'selected',to:'drag'},
             {name:"leftMouseMove",from:'drag',to:'drag'},
             {name:"leftMouseMove",from:'idle',to:'idle'},
@@ -36,7 +46,9 @@ class PortDrag{
         this.fsm = createPortDragStateMachine();
         this.fsm.observe({
             onEnterDrag:()=>this.onEnterDrag(),
+            onEnterDragExist:()=>this.onEnterDragExist(),
             onLeaveDrag:()=>this.onCompleteDrag(),
+            onLeaveDragExist:()=>this.onCompleteDragExist(),
             onLeftMouseMove:()=>this.onKeepDraging()
         });
     }
@@ -54,7 +66,12 @@ class PortDrag{
             this.fsm.lastDownNode = node;
             this.fsm.lastUpPort = null;
             this.fsm.lastUpNode = null;
-            this.fsm.leftMouseDown();
+            let portd = port.portData;
+            if(portd instanceof InputPort && portd.connectInfo.length>0){
+                this.fsm.leftMouseDownExist();
+            }else{
+                this.fsm.leftMouseDown();
+            }
             e.stopPropagation();//avoid pass to node & panel, own the focus
         },true);
         portDom.addEventListener("mouseup",(e)=>{
@@ -107,32 +124,45 @@ class PortDrag{
     }
 
     newline = null;
-
+    #lastSelectLineEnd = 0;
+    #lastConnectionData = null;
     onEnterDrag(){
         this.newline = new ConnectionUI(this.panel.context);
         this.newline.panelUI=this.panel;
         this.newline.setFirstPort(this.fsm.lastDownNode,this.fsm.lastDownPort);
         this.panel.addObject(this.newline);
-        //TODO: draw a curve line :)
     }
 
+    onEnterDragExist(){
+        let port = this.fsm.lastDownPort.portData;
+        let data = port.connectInfo[0];
+        let line = this.panel.connectionUIs[data.toString()];
+        this.newline = line;
+        this.#lastSelectLineEnd = line.unbindPort(port);
+        port.connectInfo = port.connectInfo.splice(0,1);
+        delete this.panel.connectionUIs[data.toString()];
+        this.panel.data.removeConnection(data);
+        this.#lastConnectionData =data;
+        console.log(this.#lastSelectLineEnd)
+    }
+
+    // The library does not support loop transition :(
     onKeepDraging(){
-        if(this.fsm.state!="drag"){
-            return; // The library does not support loop transition :(
+        if(this.fsm.state=="drag"){
+            let absPos = this.panel.getAbsoluteDomPos();
+            let x = (this.fsm.mouseEventData.clientX-absPos.x)/this.scale-1;
+            let y = (this.fsm.mouseEventData.clientY-absPos.y)/this.scale-1;
+            this.newline.setPoint(1,x,y);
+        }else if(this.fsm.state=="dragExist"){
+            let absPos = this.panel.getAbsoluteDomPos();
+            let x = (this.fsm.mouseEventData.clientX-absPos.x)/this.scale-1;
+            let y = (this.fsm.mouseEventData.clientY-absPos.y)/this.scale-1;
+            this.newline.setPoint(this.#lastSelectLineEnd,x,y);
         }
-        let absPos = this.panel.getAbsoluteDomPos();
-        let x = (this.fsm.mouseEventData.clientX-absPos.x)/this.scale-1;
-        let y = (this.fsm.mouseEventData.clientY-absPos.y)/this.scale-1;
-        this.newline.setPoint(1,x,y);
     }
 
     onCompleteDrag(){
-        console.log("complete Drag "+this.fsm.state);
         let r=null;
-        console.log(this.fsm.lastDownNode)
-        console.log(this.fsm.lastDownPort)
-        console.log(this.fsm.lastUpNode)
-        console.log(this.fsm.lastUpPort)
         if(this.fsm.lastDownPort&&this.fsm.lastDownNode&&this.fsm.lastUpPort&&this.fsm.lastUpNode){
             r = this.panel.data.addConnectionNoOrder(
                 this.fsm.lastDownPort.portData,
@@ -144,6 +174,31 @@ class PortDrag{
         }
         if(r){
             this.newline.setLastPort(this.fsm.lastUpNode,this.fsm.lastUpPort);
+            this.newline.connectionData = r;
+            this.panel.addConnectionUI(this.newline);
+            console.log("Connected");
+        }else{
+            this.#removeCurrentLine();
+            console.log("Failed Connection");
+        }
+        this.fsm.lastUpPort=this.fsm.lastUpNode = null;
+        this.newline=null;
+    }
+
+    onCompleteDragExist(){
+        let r=null;
+        
+        if(this.fsm.lastUpPort&&this.fsm.lastUpNode){
+            r = this.panel.data.addConnectionNoOrder(
+                this.#lastConnectionData.outputPort,
+                this.#lastConnectionData.outputNode,
+                this.fsm.lastUpPort.portData,
+                this.fsm.lastUpNode.nodeData,
+                );
+            
+        }
+        if(r){
+            this.newline.setPort(this.#lastSelectLineEnd, this.fsm.lastUpNode,this.fsm.lastUpPort);
             this.newline.connectionData = r;
             this.panel.addConnectionUI(this.newline);
             console.log("Connected");

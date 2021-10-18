@@ -5,7 +5,6 @@ class ConnectionUI extends PathComponent{
 
     panelUI=null;
     #connectionData = new NodeConnectInfo();
-    nodeGraph = null;
     #portUIs = [null,null];
     #nodeUIs = [null,null];
     #nodeListeners = [null,null];
@@ -13,9 +12,16 @@ class ConnectionUI extends PathComponent{
     #phySprings=[];
     #notInit=true;
 
+    sampleLength=50; //TODO: automatically adjust samples
+
     constructor(context){
-        super(context,[new Two.Vector(0,0),new Two.Vector(0,0),new Two.Vector(0,0),new Two.Vector(0,0)]);
-        this.doAfterUpdateDom(()=>this.newline.shapeDom.style.pointerEvents="none");
+        super(context,[new Two.Vector(0,0),new Two.Vector(0,1),new Two.Vector(1,0),new Two.Vector(1,1),new Two.Vector(1,1),new Two.Vector(1,1),new Two.Vector(1,1)]);
+        this.doAfterUpdateDom(()=>{
+            this.shapeDom.style.pointerEvents="none";
+            this.styleTag = "connectLine";
+            console.log("Add Style!");
+        });
+        
         this.#phyPoints.push(this.context.phyContext.addPoint(this.points[0],true));
         for(let i=1;i<this.points.length-1;i++){
             this.#phyPoints.push(this.context.phyContext.addPoint(this.points[i],false));
@@ -57,16 +63,17 @@ class ConnectionUI extends PathComponent{
 
     // directly set position, and unbind the port
     setPoint(index,x,y){
+        let portIndex=index;
         if(index==1){
             index=this.points.length-1;
         }
         
-        if(this.#nodeListeners[index]){
-            let nodeUI = this.#nodeUIs[index];
-            AttrManager.removePropertyListener(nodeUI.rect,"x",this.#nodeListeners[index]);
-            AttrManager.removePropertyListener(nodeUI.rect,"y",this.#nodeListeners[index]);
+        if(this.#nodeListeners[portIndex]){
+            let nodeUI = this.#nodeUIs[portIndex];
+            AttrManager.removePropertyListener(nodeUI.rect,"x",this.#nodeListeners[portIndex]);
+            AttrManager.removePropertyListener(nodeUI.rect,"y",this.#nodeListeners[portIndex]);
             nodeUI.phyObj.removeAvoid(this.#phyPoints);
-            this.#nodeListeners[index]=null;
+            this.#nodeListeners[portIndex]=null;
         }
         this.updatePoint(index,x,y);
         this.#nodeUIs[index] = null;
@@ -93,6 +100,17 @@ class ConnectionUI extends PathComponent{
         this.#nodeListeners[index]=listener; //hold reference
     }
 
+    unbindPort(port){
+        let inds = [0,this.points.length-1];
+        for(const i of inds){
+            let p = i==0?0:1;
+            if(this.#portUIs[p].portData==port){
+                this.setPoint(i,this.points[i].x,this.points[i].y);
+                return p;
+            }
+        }
+    }
+
     updatePointFromPort(index){
         let absPos = this.#portUIs[index].portIconUI.getAbsoluteCanvasPos();
         let x = absPos.x+absPos.width/2;
@@ -105,6 +123,10 @@ class ConnectionUI extends PathComponent{
     }
 
     updatePoint(index=0,x,y){
+        if(!this._validDom){
+            this.updateDom();
+        }
+        this.setTop();
         this.points[index].x = x;
         this.points[index].y = y;
         //Linear interpolation, the middle points
@@ -116,29 +138,39 @@ class ConnectionUI extends PathComponent{
                 pcur.y = p0.y;
             }
             this.#notInit=false;
-        }else{
+        }else if(index==0 || index ==this.points.length-1){
             let p0=this.points[0];
             let p1=this.points[this.points.length-1];
             let pd = {x:p1.x-p0.x,y:p1.x-p0.x};
-            let springLength = Math.sqrt(pd.x*pd.x+pd.y*pd.y)/(this.points.length-1);
+            let len = Math.sqrt(pd.x*pd.x+pd.y*pd.y);
+            let springLength = len/(this.points.length-1)*0.75;
+            let springk = 0.2;
+            if(len<30){
+                springk *= (len/30.0);
+            }
             for(const spring of this.#phySprings){
                 spring.orgLength=springLength;
+                spring.enable = len>20;
+                spring.k = springk;
             }
             let interp = 1.0/(this.points.length-1);
+            //let strength = 1/(Math.max(10,len)/100.0);
             for(let i=1;i<this.points.length-1;i++){
                 let t=interp*i;
-                this.#phySprings[this.points.length-1+i-1].refPoint.x=p1.x*t+p0.x*(1-t);
-                this.#phySprings[this.points.length-1+i-1].refPoint.y=p1.y*t+p0.y*(1-t);
+                let sp=this.#phySprings[this.points.length-1+i-1];
+                sp.refPoint.x=p1.x*t+p0.x*(1-t);
+                sp.refPoint.y=p1.y*t+p0.y*(1-t);
+                //sp.strength = strength*strength;
             }
         }
         this.update();
     }
 
-    adjustPoints(){
-
-    }
-
     removeFromScene(){
+        //unbind all uis
+        this.setPoint(0,this.points[0].x,this.points[0].y);
+        let ind = this.points.length-1;
+        this.setPoint(1,this.points[ind].x,this.points[ind].y);
         this.context.phyContext.removes(this.#phyPoints);
         this.context.phyContext.removes(this.#phySprings);
         super.removeFromScene();

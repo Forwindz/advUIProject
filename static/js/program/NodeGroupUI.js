@@ -46,7 +46,7 @@ class NodeGroupUI extends RectComponent{
     }
 
     addConnectionUI(connectionUI){
-        this.connectionUIs[connectionUI.connectionData]=connectionUI;
+        this.connectionUIs[connectionUI.connectionData.toString()]=connectionUI;
     }
 
     addNodeUI(node,x=0,y=0){
