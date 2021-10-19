@@ -13,6 +13,8 @@ class TwoCompponent extends LayoutComponent{
     #afterDomUpdateEvent = new EventPublisher(); //this only invoke once, and reset after each event
     //#layer = 0; 
 
+    #display = true;
+
     constructor(context,shape=null){
         super();
         this.context=context;
@@ -70,6 +72,27 @@ class TwoCompponent extends LayoutComponent{
     get context(){
         return this.context;
     }
+
+    set display(v){
+        if(this.#display!=v){
+            this.#display=v;
+            if(this.shapeDom){
+                if(v){
+                    this.shapeDom.style.visibility = "visible";
+                }else{
+                    this.shapeDom.style.visibility = "hidden";
+                }
+            }
+            for(const obj of this.objs){
+                obj.display=v;
+            }
+        }
+    }
+
+    get display(){
+        return this.#display;
+    }
+
 
     updateDom(){
         if(this._shape && !this._validDom){
@@ -213,6 +236,23 @@ class TwoCompponent extends LayoutComponent{
         
     }
 
+    getRelativePos(x,y){
+        let a = this.getAbsoluteDomPos();
+        if(this.shape){
+            return {
+                x:(x-a.left)/this.shape.scale,
+                y:(y-a.top)/this.shape.scale
+            }
+        }else{
+            return {
+                x:x-a.left,
+                y:y-a.top
+            }
+        }
+        
+
+    }
+
 }
 
 class PathComponent extends TwoCompponent{
@@ -231,13 +271,16 @@ class PathComponent extends TwoCompponent{
 }
 
 class TextComponent extends TwoCompponent{
-    constructor(context,shape=null){
+    constructor(context,shape=null,avoidInteraction=true){
         super(context,shape);
         AttrManager.addPropertyListener(this.rect, "x",(x)=>this.shape.translation.set(x,this.shape.translation.y+this.rect.height/2));
         AttrManager.addPropertyListener(this.rect, "y",(y)=>this.shape.translation.set(this.shape.translation.x,y+this.rect.height/2));
         // adjust according to default text align settings
         // TODO: support more text align settings
-        this.doAfterUpdateDom(()=>{this.shapeDom.style.userSelect="none";})
+        if(avoidInteraction){
+            this.doAfterUpdateDom(()=>{this.shapeDom.style.userSelect="none";})
+        }
+        
     }
 }
 

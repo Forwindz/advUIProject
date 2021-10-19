@@ -14,6 +14,7 @@ class ConnectionUI extends PathComponent{
 
     sampleLength=50; //TODO: automatically adjust samples
 
+    //TODO: refine codes, index and port relationship is a bit ambiguous
     constructor(context){
         super(context,[new Two.Vector(0,0),new Two.Vector(0,1),new Two.Vector(1,0),new Two.Vector(1,1),new Two.Vector(1,1),new Two.Vector(1,1),new Two.Vector(1,1)]);
         this.doAfterUpdateDom(()=>{

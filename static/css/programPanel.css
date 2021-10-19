@@ -48,3 +48,13 @@
     stroke: rgb(211, 211, 211);
     stroke-width: 2px;
 }
+
+[uiStyle="assetItem"] {
+    stroke: rgb(10, 10, 10);
+    stroke-width: 0.5px;
+}
+
+[uiStyle="assetItem"]:hover {
+    stroke: rgb(107, 63, 63);
+    fill: rgb(107, 63, 63);
+}
