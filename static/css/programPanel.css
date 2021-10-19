@@ -4,6 +4,8 @@
     stroke-width: 0.1px;
 }
 
+
+
 [uiStyle="outPortText"] {
     stroke: rgb(231, 255, 229);
     fill: rgb(231, 255, 229);
@@ -16,9 +18,21 @@
     stroke-width: 1.5px;
 }
 
+[uiStyle="inPortIcon"]:hover {
+    stroke: rgb(238, 238, 253);
+    fill: rgb(178, 185, 255);
+    stroke-width: 1.5px;
+}
+
 [uiStyle="outPortIcon"] {
     stroke: rgb(231, 255, 229);
     fill: rgb(77, 77, 77);
+    stroke-width: 1.5px;
+}
+
+[uiStyle="outPortIcon"]:hover {
+    stroke: rgb(247, 255, 247);
+    fill: rgb(177, 250, 196);
     stroke-width: 1.5px;
 }
 
