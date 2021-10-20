@@ -1,6 +1,7 @@
 class AssetSelect{
-
-    constructor(shape){
+    #panel;
+    constructor(shape, panel){
+        this.#panel=panel;
         shape.doAfterUpdateDom(()=>this.install(shape));
     }
 
@@ -13,6 +14,9 @@ class AssetSelect{
                 (e)=>{
                     //add listener
                     console.log("Click Item " + s.data.name);
+                    let r = this.#panel.getRelativePos(e.clientX,e.clientY);
+                    console.log(s)
+                    this.#panel.addNode((s.data.data)(),r.x,r.y);
                     shape.display=false;
                     e.stopPropagation();
                 },true)

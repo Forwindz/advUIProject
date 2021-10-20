@@ -72,16 +72,16 @@ function loadData(context){
     context.update();
 
     let assetInteraction1 = new AssetsPopHideInteraction(libUI,nodeGroupUI);
-    let assetInteraction2 = new AssetSelect(libUI);
+    let assetInteraction2 = new AssetSelect(libUI,nodeGroupUI);
 
 }
 
 function createAssets(){
     let lib = new AssetLibrary();
-    lib.addAsset(new Asset("Name1",defineOneNode()));
-    lib.addAsset(new Asset("Name2",defineOneNode()));
-    lib.addAsset(new Asset("Name3",defineOneNode()));
-    lib.addAsset(new Asset("Name4",defineOneNode()));
-    lib.addAsset(new Asset("Name5",defineOneNode()));
+    lib.addAsset(new Asset("Name1",defineOneNode));
+    lib.addAsset(new Asset("Name2",defineOneNode));
+    lib.addAsset(new Asset("Name3",defineOneNode));
+    lib.addAsset(new Asset("Name4",defineOneNode));
+    lib.addAsset(new Asset("Name5",defineOneNode));
     return lib;
 }
