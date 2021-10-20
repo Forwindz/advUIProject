@@ -165,7 +165,7 @@ class UniformTimeNode extends StrNode {
     }
 
     translate(t) {
-        this.setPortStr("Time", "t");
+        this.setPortStr("Time", "time");
         super.translate(t);
     }
 }
@@ -179,8 +179,8 @@ class UniformPosNode extends StrNode {
     }
 
     translate(t) {
-        this.setPortStr("Position X", "pos.x");
-        this.setPortStr("Position Y", "pos.y");
+        this.setPortStr("Position X", "position.x");
+        this.setPortStr("Position Y", "position.y");
         super.translate(t);
     }
 }

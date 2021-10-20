@@ -13,7 +13,7 @@ import AssetSelect from "./interaction/AssetSelect.js"
 
 import { genAssets, UniformTimeNode, UniformPosNode, FinalOutputNode } from "./Translator2.js"
 
-let globalStr;
+
 
 export function mainProgramming() {
     let elem = document.getElementById('test');
@@ -92,6 +92,16 @@ function loadData(context) {
     let assetInteraction2 = new AssetSelect(libUI, nodeGroupUI);
 }
 
+class ShareData{
+    updated = false;
+    globalStr="";
+    markFalse(){
+        this.updated=false;
+    }
+}
+
+var sd = new ShareData();
+
 function compile(nodeGraph, t) {
     let fnode = null;
     console.log("Compile " + t);
@@ -107,7 +117,8 @@ function compile(nodeGraph, t) {
     let s = fnode.beginTranslate(t);
     console.log(s);
 
-    globalStr = s;
+    sd.globalStr = s;
+    sd.updated=true;
 }
 
 function createAssets() {
@@ -121,5 +132,5 @@ function createAssets() {
 }
 
 export {
-    globalStr
+    ShareData,sd
 }
