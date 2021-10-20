@@ -12,7 +12,6 @@ class AltDelete{
             return;
         }
         shape.shapeDom.addEventListener("mousedown",(e)=>{
-            console.log(e)
             if(e.altKey){
                 this.panel.removeNode(shape.nodeData);
             }

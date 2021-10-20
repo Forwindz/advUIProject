@@ -142,7 +142,9 @@ class Node{
 class Port{
     name='port';
     typeName="int";
-    connectInfo = []
+    connectInfo = [];
+
+    
 
     constructor(_name,_type){
         this.name=_name;
@@ -168,6 +170,7 @@ class InputPort extends Port{
 };
 
 class OutputPort extends Port{
+    tc="";//translator
     constructor(_name,_type){
         super(_name,_type);
     }
@@ -182,6 +185,7 @@ class OutputPort extends Port{
     // events, subscribe to fetch the event
     eventAddNode= new EventPublisher();
     eventRemoveNode= new EventPublisher();
+    eventRemoveNodeAfter= new EventPublisher();
     eventConnectNode= new EventPublisher();
     eventDisconnectNode= new EventPublisher();
     eventTryConnectNode= new EventPublisher();
@@ -210,7 +214,7 @@ class OutputPort extends Port{
             this.removeConnection(connection);
         }
         delete this.nodes[_node.index];
-        //this.eventRemoveNode.notify(this,_node);
+        this.eventRemoveNodeAfter.notify(this,_node);
     }
 
     getNodeByIndex(index){

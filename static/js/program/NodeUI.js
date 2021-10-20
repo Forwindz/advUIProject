@@ -80,7 +80,7 @@ class NodeUI extends RectComponent{
         this.layout.minSize.height=28;
 
         //title 
-        let nodeTitle = TwoComp.makeText(this.context,"Title");
+        let nodeTitle = TwoComp.makeText(this.context,this.nodeData.name);
         nodeTitle.styleTag = "nodeTitle";
         nodeTitle.setPadding(16,0,8,0);
         this.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});

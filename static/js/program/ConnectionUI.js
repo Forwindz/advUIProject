@@ -191,10 +191,6 @@ class ConnectionUI extends PathComponent{
         super.removeFromScene();
     }
 
-    
-
-
-
 }
 
 

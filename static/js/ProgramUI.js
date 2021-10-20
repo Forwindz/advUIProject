@@ -11,6 +11,7 @@ import {Asset, AssetLibrary} from "./data/AssetLibrary.js"
 import AssetsPopHideInteraction from "./interaction/AssetPopHide.js"
 import AssetSelect from "./interaction/AssetSelect.js"
 
+import { genAssets,UniformTimeNode,UniformPosNode,FinalOutputNode } from "./Translator2.js"
 export function mainProgramming() {
     let elem = document.getElementById('test');
     let rootDom = document.getElementById("windowProgramming");
@@ -52,17 +53,23 @@ function defineOneNode(){
     return node;
 }
 
+var times=0;
 
 function loadData(context){
-    let a = new Define.NodeGraph();
-    let nodeGroupUI = new NodeGroupUI(context,a);
-    let node1 = defineOneNode();
+    let nodeGroup = new Define.NodeGraph();
+    let nodeGroupUI = new NodeGroupUI(context,nodeGroup);
+    //let node1 = defineOneNode();
+    //nodeGroupUI.addNode(node1,100,200);
+    //let node2 = defineOneNode();
+    //nodeGroupUI.addNode(node2,200,233);
+    //let node3 = defineOneNode();
+    //nodeGroupUI.addNode(node3,210,400);
+    let node1 = new UniformTimeNode();
+    let node2 = new UniformPosNode();
+    let node3 = new FinalOutputNode();
     nodeGroupUI.addNode(node1,100,200);
-    let node2 = defineOneNode();
-    nodeGroupUI.addNode(node2,200,233);
-    let node3 = defineOneNode();
-    nodeGroupUI.addNode(node3,210,400);
-
+    nodeGroupUI.addNode(node2,100,400);
+    nodeGroupUI.addNode(node3,500,300);
     let lib = createAssets();
     let libUI = new AssetsUI(context,lib);
     nodeGroupUI.addObject(libUI);
@@ -71,17 +78,38 @@ function loadData(context){
     console.log(nodeGroupUI);
     context.update();
 
+    let f = ()=>{compile(nodeGroup,times);times++;};
+    nodeGroup.eventAddNode.add(f);
+    nodeGroup.eventRemoveNodeAfter.add(f);
+    nodeGroup.eventConnectNode.add(f);
+    nodeGroup.eventDisconnectNode.add(f);
+
     let assetInteraction1 = new AssetsPopHideInteraction(libUI,nodeGroupUI);
     let assetInteraction2 = new AssetSelect(libUI,nodeGroupUI);
+}
 
+function compile(nodeGraph,t){
+    let fnode=null;
+    console.log("Compile "+t);
+    for(const node of nodeGraph.nodes){
+        if(node instanceof FinalOutputNode){
+            fnode=node;
+            break;
+        }
+    }
+    if(!fnode){
+        return;
+    }
+    let s = fnode.beginTranslate(t);
+    console.log(s);
 }
 
 function createAssets(){
-    let lib = new AssetLibrary();
-    lib.addAsset(new Asset("Name1",defineOneNode));
-    lib.addAsset(new Asset("Name2",defineOneNode));
-    lib.addAsset(new Asset("Name3",defineOneNode));
-    lib.addAsset(new Asset("Name4",defineOneNode));
-    lib.addAsset(new Asset("Name5",defineOneNode));
+    let lib = genAssets();
+    //lib.addAsset(new Asset("Name1",defineOneNode));
+    //lib.addAsset(new Asset("Name2",defineOneNode));
+    //lib.addAsset(new Asset("Name3",defineOneNode));
+    //lib.addAsset(new Asset("Name4",defineOneNode));
+    //lib.addAsset(new Asset("Name5",defineOneNode));
     return lib;
 }
