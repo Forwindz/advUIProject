@@ -16,6 +16,12 @@
     stroke-width: 1.5px;
 }
 
+[uiStyle="inPortIconConnect"] {
+    stroke: rgb(229, 235, 255);
+    fill: rgb(145, 145, 145);
+    stroke-width: 2.5px;
+}
+
 [uiStyle="inPortIcon"]:hover {
     stroke: rgb(238, 238, 253);
     fill: rgb(178, 185, 255);
@@ -28,6 +34,12 @@
     stroke-width: 1.5px;
 }
 
+[uiStyle="outPortIconConnect"] {
+    stroke: rgb(231, 255, 229);
+    fill: rgb(145, 145, 145);
+    stroke-width: 2.5px;
+}
+
 [uiStyle="outPortIcon"]:hover {
     stroke: rgb(247, 255, 247);
     fill: rgb(177, 250, 196);
@@ -38,6 +50,15 @@
     color: rgb(229, 235, 255);
     fill: rgb(47, 46, 48);
     border:rgb(66, 66, 66);
+    stroke-width: 1px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+[uiStyle="inPortDefaultConnect"] {
+    color: rgb(63, 62, 62);
+    fill: rgb(47, 46, 48);
+    border:rgb(53, 52, 52);
     stroke-width: 1px;
     border-style: solid;
     border-width: 1px;

@@ -56,10 +56,18 @@ class TwoCompponent extends LayoutComponent{
         this._styleTag=v;
         if(this.shapeDom){
             this.shapeDom.setAttribute("uiStyle",this._styleTag);
+            this.forceRedraw(this.shapeDom);
         }else{
             this.doAfterUpdateDom(()=>this.styleTag=this._styleTag);
         }
     }
+
+    forceRedraw(element){
+        var disp = element.style.display;
+        element.style.display = 'none';
+        var trick = element.offsetHeight;
+        element.style.display = disp;
+    };
 
     get shape(){
         return this._shape;
@@ -455,10 +463,7 @@ class TextEditComponent extends DomComponent{
         myforeign.style.display ="flex";
         myforeign.style.justifyContent ="center";
         myforeign.style.userSelect = textdiv.style.userSelect="none";
-        //textdiv.setAttribute("contentEditable", "true");
         textdiv.setAttribute("tabindex", "0"); // allow "onBlur" event
-        //textdiv.setAttribute("width", "100%");
-        //textdiv.setAttribute("height", "100%");
         textdiv.style.alignItems="center";
         textdiv.style.alignText="center";
         textdiv.style.justifyContent="center";
@@ -467,10 +472,7 @@ class TextEditComponent extends DomComponent{
         myforeign.setAttribute("height", "22px");
         myforeign.style.padding = textdiv.style.padding = "0px";
         myforeign.style.margin = textdiv.style.margin = "0 auto";
-        //textdiv.style.marginTop="10px";
-        //textdiv.style.display="inline-block";
         textdiv.style.fontSize = "12px";
-        //myforeign.style.border = "1px solid black";
         myforeign.setAttributeNS(null, "transform", "translate(" + 0 + " " + 0 + ")");
        
         myforeign.appendChild(textdiv);
@@ -498,6 +500,10 @@ class TextEditComponent extends DomComponent{
         this._styleTag=v;
         if(v && v!=""){
             this.doAfterUpdateDom(()=>this._textdiv.setAttribute("uiStyle",this._styleTag));
+            if(this._textdiv){
+                this._textdiv.setAttribute("uiStyle",this._styleTag);
+            }
+            this.forceRedraw(this.shapeDom);
         }
     }
 

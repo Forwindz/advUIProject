@@ -1,3 +1,4 @@
+import {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior,Port,InputPort,OutputPort} from "../data/ProgramDefine.js"
 
 
 //TODO: extend as a TwoCompenent, if I have time (for better coding structure)
@@ -22,6 +23,36 @@ class PortUI{
                 console.log(value);
             })
         }
+    }
+
+    #isConnected=false;
+    set isConnected(v){
+        this.#isConnected=v;
+        this.updateConnectState();
+    }
+
+    updateConnectState(){
+        console.log(this.#isConnected);
+        if(this.#isConnected){
+            if(this.portIconUI instanceof InputPort){
+                this.portIconUI.styleTag="inPortIconConnect";
+                if(this.portInput){
+                    this.portInput.styleTag="inPortDefaultConnect";
+                }
+            }else{
+                this.portIconUI.styleTag="outPortIconConnect";
+            }
+        }else{
+            if(this.portIconUI instanceof InputPort){
+                this.portIconUI.styleTag="inPortIcon";
+                if(this.portInput){
+                    this.portInput.styleTag="inPortDefault";
+                }
+            }else{
+                this.portIconUI.styleTag="outPortIcon";
+            }
+        }
+        this.portIconUI.update();
     }
 }
 

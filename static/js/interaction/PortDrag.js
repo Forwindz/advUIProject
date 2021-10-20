@@ -135,6 +135,7 @@ class PortDrag{
 
     onEnterDragExist(){
         let port = this.fsm.lastDownPort.portData;
+        this.fsm.lastDownPort.isConnected=false;
         let data = port.connectInfo[0];
         let line = this.panel.connectionUIs[data.toString()];
         this.newline = line;
