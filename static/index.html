@@ -1,67 +1,79 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<title>高度充满父容器</title>
-	</head>
-	<style>
-        .body{
-            padding: 0px;
-            margin: 0px;
-        }
-		.rootView {
-			height: 100%;
-			width: 100%;
-            position: absolute;
-		}
-        .sideCol{
-            height: 100%;
-            width: 25%;
-            float: left;
-        }
-        .mainCol{
-            height: 100%;
-            width: 75%;
-            float: right;
-            background-color: aqua;
-            padding: 0px;
-            margin: 0px;
-        }
-		.preview {
-			height: 30%;
-			width: 100%;/*必须,沾满宽度防止浮动 */
-			float: left;/*必须 */
-			background-color: red;
-		}
-		.content {
-			height:100%;/*必须*/
-			background-color: green;
-		}
-        .mainWindow{
-            height: 100%;
-            width: 100%;
-        }
-		.test{
-			height: 100%;
-			width: 100%;
-            padding: 0px;
-            margin: 0px;
-		}
-	</style>
-	<body class="body">
-		<script src="dist/main.js" type="module"></script>
-		<div class="rootView">
-            <div class="sideCol">
-			    <div class="preview" id="windowPreview">
-			    	预览
-			    </div>
-			    <div class="asset" id="windowAssets">
-			    	库 
-			    </div>
+
+<head>
+    <meta charset="utf-8" />
+    <title>高度充满父容器</title>
+</head>
+<style>
+    .body {
+        padding: 0px;
+        margin: 0px;
+    }
+
+    .rootView {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+    }
+
+    .sideCol {
+        height: 100%;
+        width: 35%;
+        float: left;
+    }
+
+    .mainCol {
+        height: 100%;
+        width: 65%;
+        float: right;
+        background-color: aqua;
+        padding: 0px;
+        margin: 0px;
+    }
+
+    .preview {
+        height: 60%;
+        width: 100%;
+        /*必须,沾满宽度防止浮动 */
+        float: left;
+        /*必须 */
+        background-color: red;
+    }
+
+    .asset {
+        height: 100%;
+        /*必须*/
+        background-color: green;
+    }
+
+    .mainWindow {
+        height: 100%;
+        width: 100%;
+    }
+
+    .test {
+        height: 100%;
+        width: 100%;
+        padding: 0px;
+        margin: 0px;
+    }
+</style>
+
+<body class="body">
+    <script src="dist/main.js" type="module"></script>
+    <div class="rootView">
+        <div class="sideCol">
+            <div class="preview" id="windowPreview">
             </div>
-            <div class="mainCol" id="windowProgramming">
-				<div class="test" id="test"></div>
+            <div class="asset" id="windowAssets">
+                库
             </div>
-		</div>
-	</body>
+        </div>
+        <div class="mainCol" id="windowProgramming">
+            <div class="test" id="test"></div>
+        </div>
+    </div>
+</body>
+
 </html>

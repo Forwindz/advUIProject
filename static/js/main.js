@@ -1,7 +1,9 @@
-import {mainProgramming} from "./ProgramUI.js"
-//import {init} from "./PreviewUI.js"
-function main(){
+import { mainProgramming } from "./ProgramUI.js"
+import { init, animate, test } from "./PreviewUI.js"
+function main() {
+    init();
+    animate();
     mainProgramming();
-    //init();
+    test();
 }
 main();

@@ -16,18 +16,18 @@ import EventPublisher from "../util/Events.js"
  * Some types accept other types input
  * Like int -> float, childClass -> fatherClass
  */
-class TypeBehavior{
-    name="type";
-    acceptableInput=[];
+class TypeBehavior {
+    name = "type";
+    acceptableInput = [];
 }
 
-class NodeConnectInfo{
-    inputNode =null;
-    inputPort =null;
-    outputNode=null;
-    outputPort=null;
-    constructor(_inputPort,_inputNode,_outputPort,_outputNode){
-        this.inputNode=_inputNode;
+class NodeConnectInfo {
+    inputNode = null;
+    inputPort = null;
+    outputNode = null;
+    outputPort = null;
+    constructor(_inputPort, _inputNode, _outputPort, _outputNode) {
+        this.inputNode = _inputNode;
         this.inputPort = _inputPort;
         this.outputNode = _outputNode;
         this.outputPort = _outputPort;
@@ -45,19 +45,32 @@ class NodeConnectInfo{
  * 
  * Reference: https://wiki.blender.org/wiki/Source/Nodes/NodeInterfaceFramework
  */
-class Node{
-    name="Node";
-    inputPorts={};
-    outputPorts={};
+class Node {
+    name = "Node";
+    type = "null";
+    inputPorts = {};
+    outputPorts = {};
     // for node graph, to identify the node
-    index=0;
+    index = 0;
 
-    constructor(){
+    constructor() {
         this.defineNode();
     };
 
     defineNode() {
-        
+
+    }
+
+    getType() {
+        return this.type;
+    }
+
+    getOutputPorts() {
+        return this.outputPorts;
+    }
+
+    getInputPorts() {
+        return this.inputPorts;
     }
 
     /**
@@ -66,21 +79,21 @@ class Node{
      * @param {string} _typeName 
      * @param {*} _defaultValue 
      */
-    addInputPort(_name,_typeName,_defaultValue=null){
-        let port = new InputPort(_name,_typeName,_defaultValue);
-        this.inputPorts[_name]=port;
+    addInputPort(_name, _typeName, _defaultValue = null) {
+        let port = new InputPort(_name, _typeName, _defaultValue);
+        this.inputPorts[_name] = port;
     }
 
-    addOutputPort(_name,_typeName){
-        let port = new OutputPort(_name,_typeName);
-        this.outputPorts[_name]=port;
+    addOutputPort(_name, _typeName) {
+        let port = new OutputPort(_name, _typeName);
+        this.outputPorts[_name] = port;
     }
 
     /**
      * When execute, invoke this, return outputs
      * @param {Array} _inputs 
      */
-    onExecution(_inputs){
+    onExecution(_inputs) {
 
     }
 
@@ -88,43 +101,43 @@ class Node{
      * Fire the event, if the node is connected
      * @param {NodeConnectInfo} connectInfo 
      */
-    #onConnect(connectInfo){
+    #onConnect(connectInfo) {
 
     }
 
-    #onDisconnect(connectInfo){
+    #onDisconnect(connectInfo) {
 
     }
 
 
     // redundant data for analysis
-    forwardNodes=new CountSet();
-    backwardNodes=new CountSet();
+    forwardNodes = new CountSet();
+    backwardNodes = new CountSet();
 
-    addConnection(connectInfo){
-        if(connectInfo.inputNode==this){
-            this.backwardNodes.add(connectInfo.outputNode.id,connectInfo.outputNode);
-        }else{
-            this.forwardNodes.add(connectInfo.inputNode.id,connectInfo.inputNode);
+    addConnection(connectInfo) {
+        if (connectInfo.inputNode == this) {
+            this.backwardNodes.add(connectInfo.outputNode.id, connectInfo.outputNode);
+        } else {
+            this.forwardNodes.add(connectInfo.inputNode.id, connectInfo.inputNode);
         }
         this.#onConnect(connectInfo);
     }
 
-    removeConnection(connectInfo){
-        if(connectInfo.inputNode==this){
-            this.backwardNodes.remove(connectInfo.outputNode.id,connectInfo.outputNode);
-        }else{
-            this.forwardNodes.remove(connectInfo.inputNode.id,connectInfo.inputNode);
+    removeConnection(connectInfo) {
+        if (connectInfo.inputNode == this) {
+            this.backwardNodes.remove(connectInfo.outputNode.id, connectInfo.outputNode);
+        } else {
+            this.forwardNodes.remove(connectInfo.inputNode.id, connectInfo.inputNode);
         }
         this.#onDisconnect(connectInfo);
     }
 
-    getAllConnections(){
-        c=[]
-        for(const port of this.inputPorts){
+    getAllConnections() {
+        c = []
+        for (const port of this.inputPorts) {
             c = c.concat(port.connectInfo);
         }
-        for(const port of this.outputPorts){
+        for (const port of this.outputPorts) {
             c = c.concat(port.connectInfo);
         }
         return c;
@@ -135,54 +148,58 @@ class Node{
  * Port: input/output/or a constant input
  * port can be connected to port, only if types are compatitable
  */
-class Port{
-    name='port';
-    typeName="int";
+class Port {
+    name = 'port';
+    typeName = "int";
     connectInfo = []
 
-    constructor(_name,_type){
-        this.name=_name;
-        this.typeName=_type;
+    constructor(_name, _type) {
+        this.name = _name;
+        this.typeName = _type;
     }
 
-    addConnection(_connection){
+    addConnection(_connection) {
         this.connectInfo.push(_connection);
     }
 
-    removeConnection(_connection){
-        this.connectInfo = utils.removeArrayValue(this.connectInfo,_connection);
+    removeConnection(_connection) {
+        this.connectInfo = utils.removeArrayValue(this.connectInfo, _connection);
     }
 }
 
-class InputPort extends Port{
-    defaultValue=null;
-    constructor(_name,_type,_defaultValue=null){
-        super(_name,_type);
-        this.defaultValue=_defaultValue
+class InputPort extends Port {
+    defaultValue = null;
+    constructor(_name, _type, _defaultValue = null) {
+        super(_name, _type);
+        this.defaultValue = _defaultValue
     }
-    
+
 };
 
-class OutputPort extends Port{
-    constructor(_name,_type){
-        super(_name,_type);
+class OutputPort extends Port {
+    constructor(_name, _type) {
+        super(_name, _type);
     }
 };
 
 /**
  * A series of nodes form a graph
  */
- class NodeGraph{
-    nodes=[];
-    #maxIndex=-1;
+class NodeGraph {
+    nodes = [];
+    #maxIndex = -1;
     // events, subscribe to fetch the event
-    eventAddNode= new EventPublisher();
-    eventRemoveNode= new EventPublisher();
-    eventConnectNode= new EventPublisher();
-    eventDisconnectNode= new EventPublisher();
-    eventTryConnectNode= new EventPublisher();
-    constructor(){
-        
+    eventAddNode = new EventPublisher();
+    eventRemoveNode = new EventPublisher();
+    eventConnectNode = new EventPublisher();
+    eventDisconnectNode = new EventPublisher();
+    eventTryConnectNode = new EventPublisher();
+    constructor() {
+
+    }
+
+    getNodes() {
+        return this.nodes;
     }
 
     /**
@@ -191,24 +208,24 @@ class OutputPort extends Port{
      * @param {Node} _node 
      * @returns {number} the index of the node
      */
-    addNode(_node){
+    addNode(_node) {
         this.#maxIndex++;
         this.nodes[this.#maxIndex] = _node;
-        _node.index=this.#maxIndex;
-        this.eventAddNode.notify(this,_node);
+        _node.index = this.#maxIndex;
+        this.eventAddNode.notify(this, _node);
         return this.#maxIndex;
     }
 
-    removeNode(_node){
+    removeNode(_node) {
         connections = _node.getAllConnections();
-        for(const connection of connections){
+        for (const connection of connections) {
             this.removeConnection(connection);
         }
         delete this.nodes[_node.index];
-        this.eventRemoveNode.notify(this,_node);
+        this.eventRemoveNode.notify(this, _node);
     }
 
-    getNodeByIndex(index){
+    getNodeByIndex(index) {
         return this.nodes[index];
     }
 
@@ -220,39 +237,39 @@ class OutputPort extends Port{
      * @param {Node} _outputNode 
      * @returns {NodeConnectInfo} Connection Info Object, if the connection is failed, return null
      */
-    addConnection(_inputPort,_inputNode,_outputPort,_outputNode){
-        if(!this.tryConnection(_inputPort,_inputNode,_outputPort,_outputNode)){
+    addConnection(_inputPort, _inputNode, _outputPort, _outputNode) {
+        if (!this.tryConnection(_inputPort, _inputNode, _outputPort, _outputNode)) {
             return null;
         }
-        let connectInfo = new NodeConnectInfo(_inputPort,_inputNode,_outputPort,_outputNode);
+        let connectInfo = new NodeConnectInfo(_inputPort, _inputNode, _outputPort, _outputNode);
         _inputNode.addConnection(connectInfo);
         _outputNode.addConnection(connectInfo);
         _inputPort.addConnection(connectInfo);
         _outputPort.addConnection(connectInfo);
-        this.eventConnectNode.notify(this,connectInfo);
+        this.eventConnectNode.notify(this, connectInfo);
         return connectInfo;
     }
 
-    tryConnection(_inputPort,_inputNode,_outputPort,_outputNode){
-        this.eventTryConnectNode.notify(this,[_inputPort,_inputNode,_outputPort,_outputNode]);
-        if(!_inputPort||!_inputNode||!_outputPort||!_outputNode){
+    tryConnection(_inputPort, _inputNode, _outputPort, _outputNode) {
+        this.eventTryConnectNode.notify(this, [_inputPort, _inputNode, _outputPort, _outputNode]);
+        if (!_inputPort || !_inputNode || !_outputPort || !_outputNode) {
             return false;
         }
-        if(!(_inputPort instanceof InputPort && _outputPort instanceof OutputPort)){
+        if (!(_inputPort instanceof InputPort && _outputPort instanceof OutputPort)) {
             return false;
         }
-        if(!DefinitionManager.getInstance().isCompatType(_inputPort.typeName,_outputPort.typeName)){
+        if (!DefinitionManager.getInstance().isCompatType(_inputPort.typeName, _outputPort.typeName)) {
             return false;
         }
         return true;
     }
 
-    removeConnection(connectInfo){
-        connectInfo.inputNode. removeConnection(connectInfo);
+    removeConnection(connectInfo) {
+        connectInfo.inputNode.removeConnection(connectInfo);
         connectInfo.outputNode.removeConnection(connectInfo);
-        connectInfo.inputPort. removeConnection(connectInfo);
+        connectInfo.inputPort.removeConnection(connectInfo);
         connectInfo.outputPort.removeConnection(connectInfo);
-        this.eventDisconnectNode.notify(this,connectInfo);
+        this.eventDisconnectNode.notify(this, connectInfo);
     }
 
     /**
@@ -263,12 +280,12 @@ class OutputPort extends Port{
      * @param {number} _outputNodeIndex 
      * @returns {NodeConnectInfo} 
      */
-    addConnectionRaw(_inputPortName,_inputNodeIndex,_outputPortName,_outputNodeIndex){
+    addConnectionRaw(_inputPortName, _inputNodeIndex, _outputPortName, _outputNodeIndex) {
         let _inputNode = this.nodes[_inputNodeIndex];
         let _outputNode = this.nodes[_outputNodeIndex];
         let _inputPort = _inputNode.inputPorts[_inputPortName];
         let _outputPort = _outputNode.outputPorts[_outputPortName];
-        return this.addConnection(_inputPort,_inputNode,_outputPort,_outputNode);
+        return this.addConnection(_inputPort, _inputNode, _outputPort, _outputNode);
     }
 
     /**
@@ -279,11 +296,11 @@ class OutputPort extends Port{
      * @param {Port} port2 
      * @param {Node} node2 
      */
-    addConnectionNoOrder(port1,node1,port2,node2){
-        if(port1 instanceof InputPort){
-            return this.addConnection(port1,node1,port2,node2);
-        }else{
-            return this.addConnection(port2,node2,port1,node1);
+    addConnectionNoOrder(port1, node1, port2, node2) {
+        if (port1 instanceof InputPort) {
+            return this.addConnection(port1, node1, port2, node2);
+        } else {
+            return this.addConnection(port2, node2, port1, node1);
         }
     }
 
@@ -292,26 +309,26 @@ class OutputPort extends Port{
 /**
  * Manage information for all defined nodes and types
  */
-class DefinitionManager{
-    static getInstance(){
+class DefinitionManager {
+    static getInstance() {
         if (!DefinitionManager.instance) {
             // Static attribute which holds the unique instance of 'Me'
             DefinitionManager.instance = new DefinitionManager();
         }
         return DefinitionManager.instance;
     }
-    typeID=[];
+    typeID = [];
     //TODO: complete this
-    constructor(){
+    constructor() {
 
     }
 
-    regType(typeBehavior){
-        if(typeBehavior.name==null){
+    regType(typeBehavior) {
+        if (typeBehavior.name == null) {
             return;
         }
-        if(this.typeID.hasOwnProperty(typeBehavior)){
-            throw new Error("Duplicate Attribute","Info: "+typeBehavior+" \n but------\n"+this.typeID);
+        if (this.typeID.hasOwnProperty(typeBehavior)) {
+            throw new Error("Duplicate Attribute", "Info: " + typeBehavior + " \n but------\n" + this.typeID);
         }
         typeID[typeBehavior.name] = typeBehavior;
     }
@@ -323,7 +340,7 @@ class DefinitionManager{
      * @param {string} acceptTypeName 
      * @returns {boolean}
      */
-    isCompatType(inputTypeName, acceptTypeName){
+    isCompatType(inputTypeName, acceptTypeName) {
         return true;
         /*
         if(acceptTypeName==null){
@@ -334,6 +351,6 @@ class DefinitionManager{
     }
 };
 
-export {DefinitionManager, Node,NodeGraph,NodeConnectInfo,TypeBehavior,Port,InputPort,OutputPort}
+export { DefinitionManager, Node, NodeGraph, NodeConnectInfo, TypeBehavior, Port, InputPort, OutputPort }
 
 
