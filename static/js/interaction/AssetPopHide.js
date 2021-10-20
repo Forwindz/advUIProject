@@ -8,10 +8,13 @@ function createDragStateMachine(){
             lastState:"idle"
         },
         transitions:[
-            {name:"leftMouseDown",from:'idle',to:'selected'},
-            {name:"leftMouseMove",from:'selected',to:'drag'},
+            {name:"rightMouseDown",from:'idle',to:'selectedRight'},
+            {name:"leftMouseDown",from:'idle',to:'selectedLeft'},
+            {name:"leftMouseMove",from:'selectedRight',to:'drag'},
+            {name:"leftMouseMove",from:'selectedLeft',to:'drag'},
             {name:"leftMouseUp",from:'drag',to:'idle'},
-            {name:"leftMouseUp",from:'selected',to:'idle'},
+            {name:"leftMouseUp",from:'selectedLeft',to:'idle'},
+            {name:"leftMouseUp",from:'selectedRight',to:'idle'},
             {name:"leftMouseUp",from:'idle',to:'idle'},
             
             {name:"leftMouseMove",from:'drag',to:'drag'},
@@ -51,7 +54,13 @@ class AssetsPopHideInteraction{
         document.addEventListener("mousedown",(e)=>{
             this.fsm.mouseEventData=e;
             this.fsm.lastState = this.fsm.state;
-            this.fsm.leftMouseDown();
+            
+            if(e.button!=2){
+                this.fsm.leftMouseDown();
+            }else{
+                this.fsm.rightMouseDown();
+            }
+            
         },false);
         document.addEventListener("mouseup",(e)=>{
             this.fsm.mouseEventData=e;
@@ -68,13 +77,10 @@ class AssetsPopHideInteraction{
 
     #processPanelClick(){
         let lastState = this.fsm.lastState;
-        if(lastState!="selected"){
-            return;
-        }
         let e = this.fsm.mouseEventData;
         let newr = this.panel.getRelativePos(e.clientX,e.clientY);
         if(newr.x>0){
-            if(!this.shape.display){
+            if(!this.shape.display && lastState=="selectedRight"){
                 this.shape.rect.x = newr.x;
                 this.shape.rect.y = newr.y;
                 this.shape.update();

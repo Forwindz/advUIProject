@@ -213,9 +213,14 @@ class TwoCompponent extends LayoutComponent{
             this.father=null;
         }
         this.context.remove(this.shape);
+        if(this._shapeDom){
+            this._shapeDom.remove();
+
+        }
         this._shapeDom=null;
         this._validDom=false;
         if(this._shapeGroup){
+            this._shapeGroup.remove();
             this.context.remove(this._shapeGroup);
             this._shapeGroup=null;
             for(let obj of this.objs){

@@ -124,11 +124,11 @@ class Node{
     }
 
     getAllConnections(){
-        c=[]
-        for(const port of this.inputPorts){
+        let c=[]
+        for(const port of Object.values(this.inputPorts)){
             c = c.concat(port.connectInfo);
         }
-        for(const port of this.outputPorts){
+        for(const port of Object.values(this.outputPorts)){
             c = c.concat(port.connectInfo);
         }
         return c;
@@ -204,12 +204,13 @@ class OutputPort extends Port{
     }
 
     removeNode(_node){
-        connections = _node.getAllConnections();
+        this.eventRemoveNode.notify(this,_node);
+        let connections = _node.getAllConnections();
         for(const connection of connections){
             this.removeConnection(connection);
         }
         delete this.nodes[_node.index];
-        this.eventRemoveNode.notify(this,_node);
+        //this.eventRemoveNode.notify(this,_node);
     }
 
     getNodeByIndex(index){

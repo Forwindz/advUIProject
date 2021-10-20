@@ -158,6 +158,10 @@ class NodeUI extends RectComponent{
         return this.outputPortUIs[port.name].portIconUI;
     }
 
+    removeFromScene(){
+        this.dragInteraction.uninstall(this);
+        super.removeFromScene();
+    }
 }
 
 export {NodeUI};

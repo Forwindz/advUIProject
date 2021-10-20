@@ -34,6 +34,10 @@ export function mainProgramming() {
     drag.install(context,svgDom);
 
     var scale = new PanelScaleInteraction(context,svgDom);
+    
+    window.oncontextmenu=function(e){
+        e.preventDefault();
+    }
 }
 
 function defineOneNode(){
@@ -69,6 +73,7 @@ function loadData(context){
 
     let assetInteraction1 = new AssetsPopHideInteraction(libUI,nodeGroupUI);
     let assetInteraction2 = new AssetSelect(libUI);
+
 }
 
 function createAssets(){

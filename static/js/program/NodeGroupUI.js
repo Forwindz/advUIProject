@@ -7,6 +7,8 @@ import StateMachine from "javascript-state-machine";
 import PortDrag from "../interaction/PortDrag.js"
 import EventPublisher from "../util/Events.js";
 import Two from "../lib/two.js";
+import {removeArrayValue} from "../util/utils.js"
+import AltDelete from "../interaction/AltDelete.js";
 
 //https://github.com/jakesgordon/javascript-state-machine
 
@@ -16,12 +18,14 @@ class NodeGroupUI extends RectComponent{
     data=null;
     portDragInteraction = new PortDrag();
     newNodeUIEvent = new EventPublisher();
+    altDeleteInteraction = new AltDelete(this);
     connectionUIs = {};
 
     constructor(_context, data){
         super(_context, null);
         this.initGroup();
         data.eventAddNode.add((source,params)=>this.addNodeUI(params));
+        data.eventRemoveNode.add((source,params)=>this.removeNodeUI(params));
         this.data=data;
         this.#generateUI();
         this.doAfterUpdateDom(()=>{
@@ -57,7 +61,25 @@ class NodeGroupUI extends RectComponent{
         this.nodeUIs[node.index] = nodeUI;
         nodeUI.uiData.rect.x=x;
         nodeUI.uiData.rect.y=y;
+        this.altDeleteInteraction.install(nodeUI);
         this.newNodeUIEvent.notify(this,nodeUI);
+    }
+
+    removeNode(node){
+        this.data.removeNode(node);
+    }
+
+    removeNodeUI(node){
+        console.log("Remove node");
+        let connections = node.getAllConnections();
+        for(const c of connections){
+            let cui = this.connectionUIs[c.toString()];
+            cui.removeFromScene();
+        }
+        let nodeUI=this.nodeUIs[node.index];
+        delete this.nodeUIs[node.index];
+        nodeUI.removeFromScene();
+        this.update();
     }
 
     getNodeUI(node){
@@ -105,10 +127,6 @@ class NodeGroupUI extends RectComponent{
             ondrag:function(){}
         }
         );
-    }
-
-    processLeftMouseDown(){
-        
     }
 }
 

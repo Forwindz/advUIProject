@@ -4,8 +4,6 @@
     stroke-width: 0.1px;
 }
 
-
-
 [uiStyle="outPortText"] {
     stroke: rgb(231, 255, 229);
     fill: rgb(231, 255, 229);
@@ -45,6 +43,15 @@
     border-width: 1px;
 }
 
+[uiStyle="inPortDefault"]:hover {
+    color: rgb(229, 235, 255);
+    fill: rgb(47, 46, 48);
+    border:rgb(224, 223, 223);
+    stroke-width: 1px;
+    border-style: solid;
+    border-width: 1px;
+}
+
 [uiStyle="nodeTitle"] {
     stroke: rgb(238, 238, 238);
     fill: rgb(238, 238, 238);
@@ -58,9 +65,30 @@
     fill:rgb(47, 46, 48);
 }
 
+[uiStyle="node"]:hover {
+    stroke: rgb(112, 112, 112);
+    stroke-width: 1px;
+    fill:rgb(51, 50, 53);
+}
+
+[uiStyle="node"]:hover:active {
+    stroke: rgb(32, 32, 32);
+    stroke-width: 3px;
+}
+
 [uiStyle="connectLine"] {
-    stroke: rgb(211, 211, 211);
-    stroke-width: 2px;
+    stroke: rgb(235, 124, 124);
+    stroke-width: 3px;
+}
+
+[uiStyle="connectCompleteLine"]:hover {
+    stroke: rgb(227, 230, 241);
+    stroke-width: 3px;
+}
+
+[uiStyle="connectCompleteLine"] {
+    stroke: rgb(175, 175, 175);
+    stroke-width: 1.5px;
 }
 
 [uiStyle="assetItem"] {
@@ -71,4 +99,5 @@
 [uiStyle="assetItem"]:hover {
     stroke: rgb(107, 63, 63);
     fill: rgb(107, 63, 63);
+    stroke-width: 1.2px;
 }

@@ -20,7 +20,6 @@ class ConnectionUI extends PathComponent{
         this.doAfterUpdateDom(()=>{
             this.shapeDom.style.pointerEvents="none";
             this.styleTag = "connectLine";
-            console.log("Add Style!");
         });
         
         this.#phyPoints.push(this.context.phyContext.addPoint(this.points[0],true));
@@ -35,6 +34,10 @@ class ConnectionUI extends PathComponent{
         for(let i=1;i<this.points.length-1;i++){
             this.#phySprings.push(this.context.phyContext.addForceToPoint({x:-10000,y:-10000},this.#phyPoints[i]));
         }
+    }
+
+    get isConnected(){
+        return this.#portUIs[0]!=null && this.#portUIs[1]!=null;
     }
 
     set connectionData(v){
@@ -140,6 +143,7 @@ class ConnectionUI extends PathComponent{
             }
             this.#notInit=false;
         }else if(index==0 || index ==this.points.length-1){
+            this.checkConnected();
             let p0=this.points[0];
             let p1=this.points[this.points.length-1];
             let pd = {x:p1.x-p0.x,y:p1.x-p0.x};
@@ -165,6 +169,16 @@ class ConnectionUI extends PathComponent{
             }
         }
         this.update();
+    }
+
+    checkConnected(){
+        if(this.isConnected){
+            this.shapeDom.style.pointerEvents="auto";
+            this.styleTag = "connectCompleteLine";
+        }else{
+            this.shapeDom.style.pointerEvents="none";
+            this.styleTag = "connectLine";
+        }
     }
 
     removeFromScene(){
