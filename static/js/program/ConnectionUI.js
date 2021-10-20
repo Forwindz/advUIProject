@@ -78,6 +78,7 @@ class ConnectionUI extends PathComponent{
             AttrManager.removePropertyListener(nodeUI.rect,"y",this.#nodeListeners[portIndex]);
             nodeUI.phyObj.removeAvoid(this.#phyPoints);
             this.#nodeListeners[portIndex]=null;
+            this.#portUIs[portIndex].isConnected=false;
         }
         this.updatePoint(index,x,y);
         this.#nodeUIs[index] = null;
@@ -92,9 +93,11 @@ class ConnectionUI extends PathComponent{
             AttrManager.removePropertyListener(nodeUIOld.rect,"y",this.#nodeListeners[index]);
             nodeUIOld.phyObj.removeAvoid(this.#phyPoints);
             this.#nodeListeners[index]=null;
+            this.#portUIs[index].isConnected=false;
         }
         this.#nodeUIs[index] = nodeUI;
         this.#portUIs[index] = portUI;
+        portUI.isConnected=true;
         
         this.updatePointFromPort(index);
         let listener=(v)=>{this.updatePointFromPort(index);}
@@ -186,6 +189,8 @@ class ConnectionUI extends PathComponent{
         this.setPoint(0,this.points[0].x,this.points[0].y);
         let ind = this.points.length-1;
         this.setPoint(1,this.points[ind].x,this.points[ind].y);
+        if(this.#portUIs[0])this.#portUIs.isConnected=false;
+        if(this.#portUIs[1])this.#portUIs.isConnected=false;
         this.context.phyContext.removes(this.#phyPoints);
         this.context.phyContext.removes(this.#phySprings);
         super.removeFromScene();

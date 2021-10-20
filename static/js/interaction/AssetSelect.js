@@ -15,8 +15,8 @@ class AssetSelect{
                     //add listener
                     console.log("Click Item " + s.data.name);
                     let r = this.#panel.getRelativePos(e.clientX,e.clientY);
-                    console.log(s)
-                    this.#panel.addNode((s.data.data)(),r.x,r.y);
+                    let scale = this.#panel.context.scene.scale;
+                    this.#panel.addNode((s.data.data)(),r.x/scale,r.y/scale);
                     shape.display=false;
                     e.stopPropagation();
                 },true)

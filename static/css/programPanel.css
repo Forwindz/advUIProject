@@ -16,6 +16,12 @@
     stroke-width: 1.5px;
 }
 
+[uiStyle="inPortIconConnect"] {
+    stroke: rgb(229, 235, 255);
+    fill: rgb(145, 145, 145);
+    stroke-width: 2.5px;
+}
+
 [uiStyle="inPortIcon"]:hover {
     stroke: rgb(238, 238, 253);
     fill: rgb(178, 185, 255);
@@ -28,6 +34,12 @@
     stroke-width: 1.5px;
 }
 
+[uiStyle="outPortIconConnect"] {
+    stroke: rgb(231, 255, 229);
+    fill: rgb(145, 145, 145);
+    stroke-width: 2.5px;
+}
+
 [uiStyle="outPortIcon"]:hover {
     stroke: rgb(247, 255, 247);
     fill: rgb(177, 250, 196);
@@ -38,6 +50,15 @@
     color: rgb(229, 235, 255);
     fill: rgb(47, 46, 48);
     border:rgb(66, 66, 66);
+    stroke-width: 1px;
+    border-style: solid;
+    border-width: 1px;
+}
+
+[uiStyle="inPortDefaultConnect"] {
+    color: rgb(63, 62, 62);
+    fill: rgb(47, 46, 48);
+    border:rgb(53, 52, 52);
     stroke-width: 1px;
     border-style: solid;
     border-width: 1px;
@@ -56,7 +77,6 @@
     stroke: rgb(238, 238, 238);
     fill: rgb(238, 238, 238);
     stroke-width: 0.1px;
-    font-size: 16px;
 }
 
 [uiStyle="node"] {
@@ -92,12 +112,19 @@
 }
 
 [uiStyle="assetItem"] {
-    stroke: rgb(10, 10, 10);
-    stroke-width: 0.5px;
+    stroke: rgb(166, 166, 196);
+    fill: rgb(166, 166, 196);
+    stroke-width: 0.0px;
+}
+
+[uiStyle="assetLib"] {
+    stroke: rgb(34, 23, 51);
+    fill:rgb(70, 69, 92);
+    stroke-width: 1px;
 }
 
 [uiStyle="assetItem"]:hover {
-    stroke: rgb(107, 63, 63);
-    fill: rgb(107, 63, 63);
-    stroke-width: 1.2px;
+    stroke: rgb(255, 255, 255);
+    fill: rgb(255, 255, 255);
+    stroke-width: 0.5px;
 }

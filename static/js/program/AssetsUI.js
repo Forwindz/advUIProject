@@ -17,7 +17,7 @@ class AssetsUI extends RectComponent{
     constructor(context,data){
         super(context,null);
         this.data=data;
-        this.styleTag = "AssetLib";
+        this.styleTag = "assetLib";
         this.generateUI();
     }
 

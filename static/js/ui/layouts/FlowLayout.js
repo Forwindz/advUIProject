@@ -160,6 +160,8 @@ class FlowLayout extends Layout{
 
             if(this.constrainSize.width<0){
                 this.curObj.rect.width = maxWidth;
+            }else{
+                this.curObj.rect.width = this.constrainSize.width;
             }
 
             if(this.constrainSize.height<0){
