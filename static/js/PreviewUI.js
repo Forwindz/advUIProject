@@ -1,180 +1,157 @@
 /*
     Three.js in project "AdvUI Project"
     Author: 
-    Date: September 2021 (three.js r132)
+    Date: Octorber 2021 (three.js r132)
 */
 'use strict'
-/*
-import * as THREE from './three/build/three.module.js';
-import * as dat from './three/examples/jsm/libs/dat.gui.module.js';
-import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js'
-import Stats from './three/examples/jsm/libs/stats.module.js';
-*/
+
 import * as THREE from 'three';
-import Stats from './lib/stats.module.js';
+import Stats from 'three/examples/jsm/libs/stats.module';
+import { GUI } from 'three/examples/jsm/libs/dat.gui.module'
+import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 
-let container, stats;
+import * as Define from "./data/ProgramDefine.js"
+import * as Translator from "./Translator.js"
+import { buildContext } from "./ui/uiContext.js"
+import { globalStr } from "./ProgramUI.js"
 
-let camera, scene, renderer;
+let vertexShaderText = " \
+varying vec2 vUv; \
+\
+void main()\
+{\
+    vUv = uv;\
+    vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );\
+    gl_Position = projectionMatrix * mvPosition;\
+}\
+" ;
 
-let mouseX = 0, mouseY = 0;
+let fragmentShaderText1 = "\
+uniform float time;\
+\
+varying vec2 vUv;\
+\
+void main( void ) {\
+\
+    vec2 position = vUv;\
+\
+    float color = 0.0;\
+    color += sin( position.x * cos( time / 15.0 ) * 80.0 ) + cos( position.y * cos( time / 15.0 ) * 10.0 );\
+    color += sin( position.y * sin( time / 10.0 ) * 40.0 ) + cos( position.x * sin( time / 25.0 ) * 40.0 );\
+    color += sin( position.x * sin( time / 5.0 ) * 10.0 ) + sin( position.y * sin( time / 35.0 ) * 80.0 );\
+    color *= sin( time / 10.0 ) * 0.5;\
+\
+    gl_FragColor = vec4( vec3( color, color * 0.5, sin( color + time / 3.0 ) * 0.75 ), 1.0 );\
+\
+}\
+" ;
 
-let windowHalfX = window.innerWidth / 2;
-let windowHalfY = window.innerHeight / 2;
+let fragmentShaderText2 = "\
+\
+uniform float time;\
+\
+varying vec2 vUv;\
+\
+void main( void ) {\
+    \
+    vec2 position = - 1.0 + 2.0 * vUv;\
+    \
+    float red = abs( sin( position.x * position.y + time / 5.0 ) );\
+    float green = abs( sin( position.x * position.y + time / 4.0 ) );\
+    float blue = abs( sin( position.x * position.y + time / 3.0 ) );\
+    gl_FragColor = vec4( red, green, blue, 1.0 );\
+    \
+}\
+"
 
-//init();
-//animate();
+let stats;
 
-export function init() {
+let camera, scene, renderer, clock;
 
-    container = document.getElementsByClassName('preview')[0];
+let uniforms1 = {
+    "time": { value: 1.0 }
+};
+let uniforms2;
 
-    camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 1, 10000);
-    camera.position.z = 1800;
+let canvasWidth, canvasHeight;
+
+let params;
+
+function init() {
+    const container = document.getElementById('windowPreview');
+
+    canvasWidth = container.offsetWidth;// remember using offset but not inner or client
+    canvasHeight = container.offsetHeight;
+    console.log(canvasWidth + "_" + canvasHeight + "and " + window.innerWidth + "_" + window.innerHeight);
+    const aspect = canvasWidth / canvasHeight;
+
+    camera = new THREE.PerspectiveCamera(40, aspect, 1, 3000);
+    camera.position.z = 4;
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xffffff);
+    clock = new THREE.Clock();
 
-    const light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(0, 0, 1);
-    scene.add(light);
+    const geometrys = [
+        new THREE.SphereGeometry(0.5, 64, 64),
+        new THREE.BoxGeometry(0.75, 0.75, 0.75),
+    ]
 
-    // shadow
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 128;
+    // uniforms2 = {
+    //     "time": { value: 1.0 },
+    //     "colorTexture": { value: new THREE.TextureLoader().load('textures/disturb.jpg') }
+    // };
+    // uniforms2["colorTexture"].value.wrapS = uniforms2["colorTexture"].value.wrapT = THREE.RepeatWrapping;
 
-    const context = canvas.getContext('2d');
-    const gradient = context.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
-    gradient.addColorStop(0.1, 'rgba(210,210,210,1)');
-    gradient.addColorStop(1, 'rgba(255,255,255,1)');
+    params = [
+        [fragmentShaderText1, uniforms1]
+        //,[fragmentShaderText2, uniforms1]
+    ];
 
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < params.length; i++) {
 
-    const shadowTexture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.ShaderMaterial({
 
-    const shadowMaterial = new THREE.MeshBasicMaterial({ map: shadowTexture });
-    const shadowGeo = new THREE.PlaneGeometry(300, 300, 1, 1);
+            uniforms: params[i][1],
+            vertexShader: vertexShaderText,
+            fragmentShader: params[i][0]
 
-    let shadowMesh;
+        });
 
-    shadowMesh = new THREE.Mesh(shadowGeo, shadowMaterial);
-    shadowMesh.position.y = - 250;
-    shadowMesh.rotation.x = - Math.PI / 2;
-    scene.add(shadowMesh);
-
-    shadowMesh = new THREE.Mesh(shadowGeo, shadowMaterial);
-    shadowMesh.position.y = - 250;
-    shadowMesh.position.x = - 400;
-    shadowMesh.rotation.x = - Math.PI / 2;
-    scene.add(shadowMesh);
-
-    shadowMesh = new THREE.Mesh(shadowGeo, shadowMaterial);
-    shadowMesh.position.y = - 250;
-    shadowMesh.position.x = 400;
-    shadowMesh.rotation.x = - Math.PI / 2;
-    scene.add(shadowMesh);
-
-    const radius = 200;
-
-    const geometry1 = new THREE.IcosahedronGeometry(radius, 1);
-
-    const count = geometry1.attributes.position.count;
-    geometry1.setAttribute('color', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-
-    const geometry2 = geometry1.clone();
-    const geometry3 = geometry1.clone();
-
-    const color = new THREE.Color();
-    const positions1 = geometry1.attributes.position;
-    const positions2 = geometry2.attributes.position;
-    const positions3 = geometry3.attributes.position;
-    const colors1 = geometry1.attributes.color;
-    const colors2 = geometry2.attributes.color;
-    const colors3 = geometry3.attributes.color;
-
-    for (let i = 0; i < count; i++) {
-
-        color.setHSL((positions1.getY(i) / radius + 1) / 2, 1.0, 0.5);
-        colors1.setXYZ(i, color.r, color.g, color.b);
-
-        color.setHSL(0, (positions2.getY(i) / radius + 1) / 2, 0.5);
-        colors2.setXYZ(i, color.r, color.g, color.b);
-
-        color.setRGB(1, 0.8 - (positions3.getY(i) / radius + 1) / 2, 0);
-        colors3.setXYZ(i, color.r, color.g, color.b);
+        const mesh = new THREE.Mesh(geometrys[i], material);
+        mesh.position.x = i - (params.length - 1) / 2;
+        mesh.position.y = i % 2 - 0.5;
+        scene.add(mesh);
 
     }
 
-    const material = new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        flatShading: true,
-        vertexColors: true,
-        shininess: 0
-    });
-
-    const wireframeMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, wireframe: true, transparent: true });
-
-    let mesh = new THREE.Mesh(geometry1, material);
-    let wireframe = new THREE.Mesh(geometry1, wireframeMaterial);
-    mesh.add(wireframe);
-    mesh.position.x = - 400;
-    mesh.rotation.x = - 1.87;
-    scene.add(mesh);
-
-    mesh = new THREE.Mesh(geometry2, material);
-    wireframe = new THREE.Mesh(geometry2, wireframeMaterial);
-    mesh.add(wireframe);
-    mesh.position.x = 400;
-    scene.add(mesh);
-
-    mesh = new THREE.Mesh(geometry3, material);
-    wireframe = new THREE.Mesh(geometry3, wireframeMaterial);
-    mesh.add(wireframe);
-    scene.add(mesh);
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer = new THREE.WebGLRenderer({ canvas: container.domElement, antialias: true });
+    renderer.setPixelRatio(container.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
     stats = new Stats();
     container.appendChild(stats.dom);
 
-    document.addEventListener('mousemove', onDocumentMouseMove);
-
-    //
+    onWindowResize();
 
     window.addEventListener('resize', onWindowResize);
 
+
 }
-
 function onWindowResize() {
+    canvasWidth = document.getElementById('windowPreview').offsetWidth;
+    canvasHeight = document.getElementById('windowPreview').offsetHeight;
 
-    windowHalfX = window.innerWidth / 2;
-    windowHalfY = window.innerHeight / 2;
-
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = canvasWidth / canvasHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(canvasWidth, canvasHeight);
 
 }
-
-function onDocumentMouseMove(event) {
-
-    mouseX = (event.clientX - windowHalfX);
-    mouseY = (event.clientY - windowHalfY);
-
-}
-
-//
-
 function animate() {
 
     requestAnimationFrame(animate);
+    params[1] = [globalStr, uniforms1];
 
     render();
     stats.update();
@@ -183,11 +160,26 @@ function animate() {
 
 function render() {
 
-    camera.position.x += (mouseX - camera.position.x) * 0.05;
-    camera.position.y += (- mouseY - camera.position.y) * 0.05;
+    const delta = clock.getDelta();
 
-    camera.lookAt(scene.position);
+    uniforms1["time"].value += delta * 5;
+    // uniforms2[ "time" ].value = clock.elapsedTime;
+
+    for (let i = 0; i < scene.children.length; i++) {
+
+        const object = scene.children[i];
+
+        object.rotation.y += delta * 0.5 * (i % 2 ? 1 : - 1);
+        object.rotation.x += delta * 0.5 * (i % 2 ? - 1 : 1);
+
+    }
 
     renderer.render(scene, camera);
 
+}
+
+
+export {
+    init,
+    animate,
 }
