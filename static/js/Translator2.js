@@ -26,7 +26,7 @@ class StrNode extends Node{
         }else{
             let c = port.connectInfo[0];
             if(c.outputNode.updateTag!=updateTag){
-                c.outputNode.translate();
+                c.outputNode.translate(updateTag);
             }
             return c.outputPort.tc;
         }
