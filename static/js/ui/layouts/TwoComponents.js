@@ -174,6 +174,23 @@ class TwoCompponent extends LayoutComponent{
         }
     }
 
+    get scale(){
+        if(this._shapeGroup){
+            return this._shapeGroup.scale;
+        }else if (this.shape){
+            return this.shape.scale
+        }else{
+            return 1.0;
+        }
+    }
+
+    set scale(v){
+        if(this._shapeGroup){
+            this._shapeGroup.scale=v;
+        }else if (this.shape){
+            this.shape.scale=v;
+        }
+    }
     update(){
         this.context.update();
     }

@@ -79,10 +79,16 @@ class AssetsPopHideInteraction{
         let lastState = this.fsm.lastState;
         let e = this.fsm.mouseEventData;
         let newr = this.panel.getRelativePos(e.clientX,e.clientY);
-        if(newr.x>0){
+        
+        let scale = this.shape.context.scene.scale
+        newr.x/=scale;
+        newr.y/=scale;
+        
+        if(e.clientX>document.body.clientWidth*0.25){
             if(!this.shape.display && lastState=="selectedRight"){
                 this.shape.rect.x = newr.x;
                 this.shape.rect.y = newr.y;
+                this.shape.scale = 1.0/scale;
                 this.shape.update();
                 this.shape.display=true;
             }else{

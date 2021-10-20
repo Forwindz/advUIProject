@@ -82,8 +82,9 @@ class NodeUI extends RectComponent{
         //title 
         let nodeTitle = TwoComp.makeText(this.context,this.nodeData.name);
         nodeTitle.styleTag = "nodeTitle";
-        nodeTitle.setPadding(16,0,8,0);
-        this.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.CENTER});
+        nodeTitle.setPadding(16,20,8,20);
+        nodeTitle.shape.size=16;
+        this.addObject(nodeTitle,{newline:false,align:FlowLayout.AlignType.LEFT});
         
         for(const portKey of Object.keys(this.nodeData.inputPorts)){
             let portIcon = TwoComp.makeRectangle(this.context,0,0,9,9,0,5,0,5);
