@@ -209,13 +209,16 @@ class TwoCompponent extends LayoutComponent{
     }
 
     removeFromScene(){
+        console.log(this)
         if(this.father){
             this.father=null;
+        }
+        if(this.shape){
+            this.shape.remove();
         }
         this.context.remove(this.shape);
         if(this._shapeDom){
             this._shapeDom.remove();
-
         }
         this._shapeDom=null;
         this._validDom=false;
@@ -223,8 +226,11 @@ class TwoCompponent extends LayoutComponent{
             this._shapeGroup.remove();
             this.context.remove(this._shapeGroup);
             this._shapeGroup=null;
-            for(let obj of this.objs){
-                obj.removeFromScene();
+            let i=0;
+            while(this.objs.length>0){
+                let o = this.objs[0];
+                this.removeObject(this.objs[0]);
+                o.removeFromScene();
             }
         }
     }
@@ -459,6 +465,12 @@ class TextEditComponent extends DomComponent{
         this._textdiv = textdiv;
         this._textnode = textnode;
         this._validDom = true;
+    }
+
+    removeFromScene(){
+        this._textdiv.remove();
+        this._textnode.remove();
+        super.removeFromScene();
     }
 
     get styleTag(){

@@ -159,6 +159,7 @@ class NodeUI extends RectComponent{
     }
 
     removeFromScene(){
+        this.context.phyContext.remove(this.phyObj);
         this.dragInteraction.uninstall(this);
         super.removeFromScene();
     }
